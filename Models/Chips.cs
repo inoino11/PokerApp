@@ -19,8 +19,9 @@ public static class Chips
         return long.TryParse(s, NumberStyles.None, CultureInfo.InvariantCulture, out amount) && amount < 1_000_000_000_000;
     }
 
+    // 区切りは改行しない空白で挟む（ボタンの中などで「50 /」と「100」の間で折り返さないように）
     public static string Format(BlindLevel l) =>
-        l.Third > 0 ? $"{Format(l.Sb)} / {Format(l.Bb)} / {Format(l.Third)}" : $"{Format(l.Sb)} / {Format(l.Bb)}";
+        l.Third > 0 ? $"{Format(l.Sb)}\u00A0/\u00A0{Format(l.Bb)}\u00A0/\u00A0{Format(l.Third)}" : $"{Format(l.Sb)}\u00A0/\u00A0{Format(l.Bb)}";
 
     /// <summary>
     /// プレイヤーの色。ColorIndex で引く。
