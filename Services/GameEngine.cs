@@ -13,7 +13,7 @@ public static class GameEngine
     public static GameState NewGame(GameSettings settings) =>
         new([], settings, null, null, 1, 0, null);
 
-    public static GameState Apply(GameState s, GameCommand command) => command switch
+    public static GameState Apply(GameState s, GameCommand command) => DropStaleButtonChoice(command switch
     {
         AddPlayer c => AddPlayer(s, c),
         RenamePlayer c => Rename(s, c),
@@ -23,12 +23,17 @@ public static class GameEngine
         // MovePlayer は旧版の履歴を読むためだけに残しているので、ハンド中の制限はかけない
         MovePlayer c => Seat(s, c.PlayerId, s.Seated.ToList().FindIndex(p => p.Id == c.PlayerId) + Math.Sign(c.Direction)),
         SeatPlayer c => s.Hand is null ? Seat(s, c.PlayerId, c.ToIndex) : throw new InvalidOperationException("席替えはハンドの合間にできます。"),
+        ChooseButton c => ChooseButton(s, c),
         StartHand c => StartHand(s, c),
         Act c => Act(s, c),
         ChooseWinners c => ChooseWinners(s, c),
         UpdateSettings c => s with { Settings = Validate(c.Settings) },
         _ => throw new InvalidOperationException("不明な操作です。"),
-    };
+    });
+
+    // 選んだ D の人が離席・退席などで参加できなくなったら、選んだことを取り消す（戻ってきても選び直すまでは自動の規則）
+    static GameState DropStaleButtonChoice(GameState s) =>
+        s.ChosenButtonId is int id && !Eligible(s).Any(p => p.Id == id) ? s with { ChosenButtonId = null } : s;
 
     // --- 問い合わせ（画面から使う） ---
 
@@ -92,11 +97,13 @@ public static class GameEngine
     /// <summary>
     /// 次のハンドのボタン。前のボタンの人の次の席へ移る。前のボタンの人が抜けていても、その人の席の位置から数える。
     /// 席替えで前のボタンの人を動かすと、ボタンもその人について動く。参加できる人が 2 人未満なら null。
+    /// ユーザーが選んだ人がいて、その人が参加できるなら、その人にする（離席などで参加できなくなったら自動の規則に戻る）。
     /// </summary>
     public static int? NextButtonId(GameState s)
     {
         var eligible = Eligible(s).ToList();
         if (eligible.Count < 2) return null;
+        if (s.ChosenButtonId is int chosen && eligible.Any(p => p.Id == chosen)) return chosen;
         if (s.LastButtonId is not int last || s.Players.FindIndex(p => p.Id == last) is not (var lastPos and >= 0))
             return eligible[0].Id;
         return (eligible.FirstOrDefault(p => s.Players.IndexOf(p) > lastPos) ?? eligible[0]).Id;
@@ -193,6 +200,14 @@ public static class GameEngine
         return s with { Players = players };
     }
 
+    // ハンドの途中に変えると、払ったブラインドと手番の順を組み直すことになるので、合間だけにする
+    static GameState ChooseButton(GameState s, ChooseButton c)
+    {
+        if (s.Hand is not null) throw new InvalidOperationException("D はハンドの合間に変えられます。");
+        if (!Eligible(s).Any(p => p.Id == c.PlayerId)) throw new InvalidOperationException("次のハンドに参加できる人だけ D にできます。");
+        return s with { ChosenButtonId = c.PlayerId };
+    }
+
     // --- ハンドの開始 ---
 
     static GameState StartHand(GameState s, StartHand c)
@@ -230,7 +245,7 @@ public static class GameEngine
             s.HandCount + 1, button.Id, blinds,
             blindIdx.Select(i => order[i].Id).ToImmutableList(),
             Street.Preflop, seats.ToImmutableList(), order[first].Id, top, top, []);
-        return Normalize(s with { Players = players, Hand = hand });
+        return Normalize(s with { Players = players, Hand = hand, ChosenButtonId = null });
     }
 
     // --- アクション ---

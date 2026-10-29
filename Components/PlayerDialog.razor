@@ -26,6 +26,10 @@
         <MudDivider Class="my-3" />
 
         <div class="d-flex flex-wrap gap-2">
+            @if (CanBeButton)
+            {
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => Close(new ChooseButton(Player.Id))">次のハンドの D にする</MudButton>
+            }
             @if (Player.Status == PlayerStatus.SittingOut)
             {
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="Player.Stack <= 0"
@@ -62,6 +66,8 @@
 
     private Player Player => State.GetPlayer(PlayerId);
     private bool InPot => GameEngine.IsInPot(State, PlayerId);
+    private bool CanBeButton => State.Hand is null && GameEngine.NextButtonId(State) is int next && next != PlayerId
+        && GameEngine.Eligible(State).Any(p => p.Id == PlayerId);
     private long[] QuickAdds => [State.Settings.StartingStack / 2, State.Settings.StartingStack];
 
     protected override void OnInitialized()

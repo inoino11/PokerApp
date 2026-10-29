@@ -192,4 +192,38 @@ public class TableTests(AppFixture app)
             await context.CloseAsync();
         }
     }
+
+    [Fact]
+    public async Task 次のハンドのDを選び_元に戻せる()
+    {
+        var (context, page) = await app.OpenAsync();
+        try
+        {
+            await AddPlayers(page, 3);
+            var rows = page.Locator(".player-row");
+            await Assertions.Expect(rows.First.Locator(".badge-next")).ToBeVisibleAsync();
+
+            // 次D の人の画面にはボタンを出さない
+            await rows.First.ClickAsync();
+            await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = "次のハンドの D にする" })).ToHaveCountAsync(0);
+            await page.GetByRole(AriaRole.Button, new() { Name = "キャンセル" }).ClickAsync();
+
+            await rows.Nth(2).ClickAsync();
+            await page.GetByRole(AriaRole.Button, new() { Name = "次のハンドの D にする" }).ClickAsync();
+            await Assertions.Expect(rows.Nth(2).Locator(".badge-next")).ToBeVisibleAsync();
+            await Assertions.Expect(page.Locator(".badge-next")).ToHaveCountAsync(1);
+
+            await page.GetByText("最初のハンドを始める").ClickAsync();
+            await Assertions.Expect(rows.Nth(2).Locator(".badge-d")).ToBeVisibleAsync();
+
+            // ハンドの開始と D の選択を戻すと、次D は先頭の人に戻る
+            await page.GetByLabel("元に戻す").ClickAsync();
+            await page.GetByLabel("元に戻す").ClickAsync();
+            await Assertions.Expect(rows.First.Locator(".badge-next")).ToBeVisibleAsync();
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
 }

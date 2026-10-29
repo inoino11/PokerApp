@@ -314,4 +314,50 @@ public class GameEngineTests
         Assert.Equal(12000, g.State.GetPlayer(1).Stack);
         Assert.Equal(15000, g.State.GetPlayer(1).BuyIn);
     }
+
+    // --- D を手で選ぶ ---
+
+    [Fact]
+    public void 選んだ人がボタンになり_ブラインドはその左から()
+    {
+        var g = new TestGame(10000, 10000, 10000, 10000).Do(new ChooseButton(3));
+        Assert.Equal(3, GameEngine.NextButtonId(g.State));
+        g.Start();
+        Assert.Equal(3, g.Hand.ButtonId);
+        Assert.Equal([4, 1], g.Hand.BlindIds);
+        Assert.Null(g.State.ChosenButtonId);
+    }
+
+    [Fact]
+    public void 選んだ次のハンドからは選んだ人の次の席へ回る()
+    {
+        var g = new TestGame(10000, 10000, 10000).Do(new ChooseButton(2)).Start().Fold().Fold();
+        Assert.Equal(3, GameEngine.NextButtonId(g.State));
+    }
+
+    [Fact]
+    public void ハンドの途中と_参加できない人はDにできない()
+    {
+        var g = new TestGame(10000, 10000, 10000).Start();
+        Assert.Throws<InvalidOperationException>(() => g.Do(new ChooseButton(2)));
+        g = new TestGame(10000, 10000, 10000).Do(new SetStatus(2, PlayerStatus.SittingOut));
+        Assert.Throws<InvalidOperationException>(() => g.Do(new ChooseButton(2)));
+    }
+
+    [Fact]
+    public void 選んだ人が離席したら選んだことは取り消す()
+    {
+        var g = new TestGame(10000, 10000, 10000).Do(new ChooseButton(3)).Do(new SetStatus(3, PlayerStatus.SittingOut));
+        Assert.Null(g.State.ChosenButtonId);
+        g.Do(new SetStatus(3, PlayerStatus.Active));
+        Assert.Equal(1, GameEngine.NextButtonId(g.State));
+    }
+
+    [Fact]
+    public void 選んだ人を席替えで動かすとボタンもついて動く()
+    {
+        var g = new TestGame(10000, 10000, 10000, 10000).Do(new ChooseButton(2)).Do(new SeatPlayer(2, 3)).Start();
+        Assert.Equal(2, g.Hand.ButtonId);
+        Assert.Equal([1, 3], g.Hand.BlindIds);
+    }
 }

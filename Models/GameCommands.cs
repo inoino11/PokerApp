@@ -19,6 +19,7 @@ namespace PokerApp.Models;
 [JsonDerivedType(typeof(ChooseWinners), "winners")]
 [JsonDerivedType(typeof(UpdateSettings), "settings")]
 [JsonDerivedType(typeof(EditPlayer), "edit")]
+[JsonDerivedType(typeof(ChooseButton), "button")]
 public abstract record GameCommand;
 
 public sealed record AddPlayer(long Stack) : GameCommand;
@@ -34,6 +35,11 @@ public sealed record SetStack(int PlayerId, long Stack, bool CountAsBuyIn) : Gam
 /// プレイヤーの画面の「確定」。名前と手元の額をまとめて変え、UNDO の 1 手にする。増えた分はリバイとして記録する。
 /// </summary>
 public sealed record EditPlayer(int PlayerId, string Name, long Stack) : GameCommand;
+
+/// <summary>
+/// 次のハンドのボタンを手で選ぶ（ハンドの合間だけ）。その次のハンドからは、選んだ人を起点に自動で回る。
+/// </summary>
+public sealed record ChooseButton(int PlayerId) : GameCommand;
 
 public sealed record SetStatus(int PlayerId, PlayerStatus Status) : GameCommand;
 

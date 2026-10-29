@@ -25,4 +25,17 @@ public class SerializationTests
         Assert.Equal(JsonSerializer.Serialize(new SavedGame(1, g.State, [], []), AppJsonContext.Default.SavedGame), JsonSerializer.Serialize(new SavedGame(1, state, [], []), AppJsonContext.Default.SavedGame));
         Assert.IsType<RenamePlayer>(Assert.Single(loaded.Redo));
     }
+
+    [Fact]
+    public void 選んだDは保存して読み直しても残り_古い保存データは選んでいない扱い()
+    {
+        var state = new TestGame(10000, 10000, 10000).Do(new ChooseButton(3)).State;
+        var json = JsonSerializer.Serialize(new SavedGame(1, state, [new ChooseButton(2)], []), AppJsonContext.Default.SavedGame);
+        var loaded = JsonSerializer.Deserialize(json, AppJsonContext.Default.SavedGame)!;
+        Assert.Equal(3, loaded.Base.ChosenButtonId);
+        Assert.IsType<ChooseButton>(Assert.Single(loaded.Commands));
+
+        var old = JsonSerializer.Deserialize(json.Replace("\"ChosenButtonId\":3,", "").Replace(",\"ChosenButtonId\":3", ""), AppJsonContext.Default.SavedGame)!;
+        Assert.Null(old.Base.ChosenButtonId);
+    }
 }

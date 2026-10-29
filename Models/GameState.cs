@@ -61,7 +61,7 @@ public sealed record HandResult(int HandNumber, ImmutableList<PlayerResult> Play
 
 /// <summary>
 /// ゲーム全体の状態。不変オブジェクトで、操作のたびに GameEngine が新しい状態を作る。
-/// Players の並び順が席順。
+/// Players の並び順が席順。ChosenButtonId はハンドの合間にユーザーが選んだ次のボタン（選んでいなければ null）。
 /// </summary>
 public sealed record GameState(
     ImmutableList<Player> Players,
@@ -70,7 +70,8 @@ public sealed record GameState(
     int? LastButtonId,
     int NextPlayerId,
     int HandCount,
-    HandResult? LastResult)
+    HandResult? LastResult,
+    int? ChosenButtonId = null)
 {
     public const int MaxSeats = 10;
 
