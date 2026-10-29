@@ -152,11 +152,11 @@
 
     private static string StreetName(Street street) => street switch
     {
-        Street.Preflop => "プリフロップ",
-        Street.Flop => "フロップ",
-        Street.Turn => "ターン",
-        Street.River => "リバー",
-        _ => "ショーダウン",
+        Street.Preflop => "Preflop",
+        Street.Flop => "Flop",
+        Street.Turn => "Turn",
+        Street.River => "River",
+        _ => "Showdown",
     };
 
     private async Task Execute(GameCommand command)

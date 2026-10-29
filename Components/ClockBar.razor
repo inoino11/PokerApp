@@ -31,7 +31,7 @@
         </span>
         <MudIconButton Icon="@(Running ? Icons.Material.Filled.Pause : Icons.Material.Filled.PlayArrow)"
                        Color="@(Running ? Color.Default : Color.Primary)" Variant="@(Running ? Variant.Text : Variant.Filled)"
-                       Size="Size.Medium" OnClick="OnToggle" aria-label="@(Running ? "一時停止" : "再開")" />
+                       Size="Size.Medium" Class="clock-toggle" OnClick="OnToggle" aria-label="@(Running ? "一時停止" : "再開")" />
     }
 </div>
 

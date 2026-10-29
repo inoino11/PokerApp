@@ -86,9 +86,9 @@
             if (Hand.BlindIds[i] == id) yield return names[i];
     }
 
-    private static string RowClass(Player p, HandSeat? seat, bool toAct) =>
+    private string RowClass(Player p, HandSeat? seat, bool toAct) =>
         toAct ? "row-to-act"
-        : p.Status != PlayerStatus.Active && seat is null ? "row-out"
+        : seat is null && (Hand is not null || p.Status != PlayerStatus.Active) ? "row-out"
         : seat is { Folded: true } ? "row-folded"
         : "";
 

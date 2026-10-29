@@ -20,7 +20,7 @@ public static class Chips
     }
 
     public static string Format(BlindLevel l) =>
-        l.Third > 0 ? $"{Format(l.Sb)}/{Format(l.Bb)}/{Format(l.Third)}" : $"{Format(l.Sb)}/{Format(l.Bb)}";
+        l.Third > 0 ? $"{Format(l.Sb)} / {Format(l.Bb)} / {Format(l.Third)}" : $"{Format(l.Sb)} / {Format(l.Bb)}";
 
     /// <summary>
     /// プレイヤーの色。ColorIndex で引く。

@@ -25,9 +25,10 @@
     text-align: center;
 }
 
+/* 大きさの違う文字と丸い札が並ぶので、ベースラインではなく中央でそろえる */
 .pot-bar {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 8px;
     padding: 6px 12px;
     background: var(--mud-palette-surface);
@@ -36,6 +37,7 @@
 
 .pot-street {
     font-size: 0.8rem;
+    line-height: 1.4;
     padding: 1px 8px;
     border-radius: 10px;
     background: var(--mud-palette-primary);
@@ -49,6 +51,7 @@
 
 .pot-total {
     font-size: 1.4rem;
+    line-height: 1.2;
     font-weight: 700;
     color: var(--mud-palette-secondary);
     font-variant-numeric: tabular-nums;

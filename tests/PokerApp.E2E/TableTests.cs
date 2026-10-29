@@ -92,10 +92,10 @@ public class TableTests(AppFixture app)
             await page.GetByRole(AriaRole.Button, new() { Name = "Call", Exact = false }).ClickAsync();  // P3
             for (var i = 0; i < 4; i++) await page.GetByRole(AriaRole.Button, new() { Name = "Check", Exact = true }).ClickAsync();
 
-            await Assertions.Expect(page.GetByText("メインポット")).ToBeVisibleAsync();
+            await Assertions.Expect(page.GetByText("Main pot")).ToBeVisibleAsync();
             await page.Locator(".winner-btn", new() { HasTextString = "P1" }).ClickAsync();
             await page.GetByRole(AriaRole.Button, new() { Name = "勝者に決定" }).ClickAsync();
-            await Assertions.Expect(page.GetByText("サイドポット 1")).ToBeVisibleAsync();
+            await Assertions.Expect(page.GetByText("Side pot 1")).ToBeVisibleAsync();
             await page.Locator(".winner-btn", new() { HasTextString = "P2" }).ClickAsync();
             await page.GetByRole(AriaRole.Button, new() { Name = "勝者に決定" }).ClickAsync();
             await Assertions.Expect(page.GetByText("ハンド #1 の結果")).ToBeVisibleAsync();

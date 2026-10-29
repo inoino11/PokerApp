@@ -33,9 +33,17 @@
 
 .clock-paused {
     color: var(--mud-palette-text-disabled);
-    animation: blink 1.2s steps(2) infinite;
+    animation: paused-pulse 1.2s ease-in-out infinite alternate;
 }
 
-@keyframes blink {
-    50% { opacity: 0.4; }
+@keyframes paused-pulse {
+    to { opacity: 0.4; }
+}
+
+/* 再生（塗り）と一時停止（文字だけ）でボタンの大きさが変わり、帯の高さと位置がずれないように固定する */
+.clock-bar ::deep .clock-toggle {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    flex: 0 0 auto;
 }
