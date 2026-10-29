@@ -94,11 +94,6 @@
     background: color-mix(in srgb, var(--mud-palette-primary) 12%, var(--mud-palette-surface));
 }
 
-.row-to-act .player-state {
-    color: var(--mud-palette-primary);
-    font-weight: 700;
-}
-
 .row-folded,
 .row-out {
     opacity: 0.45;

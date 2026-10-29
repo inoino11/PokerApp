@@ -13,6 +13,17 @@ button {
     cursor: pointer;
 }
 
+/* --- 入力の一時停止（Components/InputLock.cs） --- */
+.input-lock {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.table-controls > *,
+.action-panel {
+    transition: opacity 0.2s;
+}
+
 /* --- 精算表 --- */
 .ledger .num {
     text-align: right;

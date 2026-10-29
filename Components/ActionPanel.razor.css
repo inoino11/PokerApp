@@ -110,3 +110,14 @@
     text-transform: none;
     line-height: 1.2;
 }
+
+/* 押し間違えやすい場面の Fold や「戻る」は小さく、目立たせない */
+.action-row ::deep .act-minor {
+    flex: 0 0 64px;
+    font-weight: 400;
+    color: var(--mud-palette-text-secondary);
+}
+
+.action-row ::deep .act-confirm {
+    flex: 1;
+}

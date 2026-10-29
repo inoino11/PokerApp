@@ -59,7 +59,7 @@
     }
 
     @* --- 操作 --- *@
-    <div class="table-controls @(_seatMode ? "d-none" : "")">
+    <div class="table-controls @(_seatMode ? "d-none" : "") @(_locked ? "input-lock" : "")">
         @if (S.Hand is null)
         {
             <IdlePanel State="S" NextLevel="EffectiveLevel(Clock.Level(S.Settings))" OnStart="StartHand" />
@@ -82,6 +82,7 @@
     private int? _shownToAct;
     private bool _scrollToActive;
     private bool _seatMode;
+    private bool _locked;
     private DotNetObjectReference<Home>? _self;
 
     private GameState S => Game.State;
@@ -178,14 +179,24 @@
         await Execute(new SeatPlayer(seated[from].Id, to));
     }
 
-    private Task Act(Act act) => Execute(act);
+    // ハンドを進める操作のあとは、パネルの中身が入れ替わるので少しの間押せなくする（二度押しで次の人の操作をしないように）
+    private async Task Advance(GameCommand command)
+    {
+        _locked = true;
+        await Execute(command);
+        StateHasChanged();
+        await Task.Delay(InputLock.Milliseconds);
+        _locked = false;
+    }
 
-    private Task ChooseWinners(ImmutableList<int> ids) => Execute(new ChooseWinners(ids));
+    private Task Act(Act act) => Advance(act);
+
+    private Task ChooseWinners(ImmutableList<int> ids) => Advance(new ChooseWinners(ids));
 
     private async Task StartHand()
     {
         await Clock.TickAsync(S.Settings);
-        await Execute(new StartHand(Clock.LevelIndex(S.Settings)));
+        await Advance(new StartHand(Clock.LevelIndex(S.Settings)));
         if (S.Hand is not null && S.Settings.LevelMinutes > 0) await Clock.StartIfFirstAsync();
         await Device.KeepAwakeAsync();
     }

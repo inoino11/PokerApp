@@ -97,7 +97,6 @@
         if (seat is { AllIn: true }) return "All-in";
         if (p.Status == PlayerStatus.SittingOut) return p.Stack == 0 ? "離席中（チップなし）" : "離席中";
         if (Hand is not null && seat is null) return "次のハンドから";
-        if (Hand?.ToActId == p.Id) return "手番";
         return "";
     }
 }

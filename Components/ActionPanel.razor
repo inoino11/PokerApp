@@ -1,17 +1,28 @@
-@* 手番の人のアクション。額はポットの % ボタン・± ボタン・テンキーで決め、キーボードは出さない *@
-<div class="action-panel">
+@* 手番の人のアクション。レイズは「Raise… で額を選ぶ画面へ → 確定」の 2 段階にし、
+   額を選ぶ間は Fold・Call・All-in を出さない（% ボタンの押し損ねでアクションしないように）。
+   額はポットの % ボタン・± ボタン・テンキーで決め、キーボードは出さない *@
+<div class="action-panel @(_locked ? "input-lock" : "")">
     <div class="action-who">
         <span class="action-name">@Player.Name</span>
         <span class="action-stack">手元 @Chips.Format(Player.Stack)</span>
     </div>
 
-    @if (CanRaise)
+    @if (_sizing)
     {
+        <div class="pct-row">
+            @foreach (var pct in Percents)
+            {
+                var to = GameEngine.PotPercentTo(State, Seat, Player, pct);
+                <button type="button" class="pct-btn @(to == _to ? "pct-on" : "")" disabled="@(to <= Hand.CurrentBet)" @onclick="() => _to = to">@pct%</button>
+            }
+            <button type="button" class="pct-btn @(_to == MaxTo ? "pct-on" : "")" @onclick="() => _to = MaxTo">Max</button>
+        </div>
+
         <div class="sizer">
             <button type="button" class="sizer-step" @onpointerdown="() => StartRepeat(-1)" @onpointerup="StopRepeat"
                     @onpointerleave="StopRepeat" @onpointercancel="StopRepeat" aria-label="減らす">−</button>
             <button type="button" class="sizer-amount @(BelowMin ? "sizer-warn" : "")" @onclick="ToggleKeypad">
-                <span class="sizer-label">@(Hand.CurrentBet == 0 ? "Bet" : "Raise to")</span>
+                <span class="sizer-label">@BetWord</span>
                 <span class="sizer-value">@Chips.Format(_to)</span>
                 <span class="sizer-hint">@(BelowMin ? $"最小 {Chips.Format(MinTo)} 未満" : "タップで入力")</span>
             </button>
@@ -23,43 +34,42 @@
         {
             <Keypad Value="_to" ValueChanged="v => _to = Math.Min(v, MaxTo)" OnDone="ToggleKeypad" />
         }
-        else
-        {
-            <div class="pct-row">
-                @foreach (var pct in Percents)
-                {
-                    var to = GameEngine.PotPercentTo(State, Seat, Player, pct);
-                    <button type="button" class="pct-btn @(to == _to ? "pct-on" : "")" disabled="@(to <= Hand.CurrentBet)" @onclick="() => _to = to">@pct%</button>
-                }
-                <button type="button" class="pct-btn" @onclick="() => _to = MaxTo">Max</button>
-            </div>
-        }
-    }
 
-    <div class="action-row">
-        <MudButton Variant="Variant.Outlined" Color="Color.Default" Class="act-btn" OnClick="() => Send(ActionKind.Fold)">Fold</MudButton>
-        @if (CallAmount > 0)
-        {
-            <MudButton Variant="Variant.Filled" Color="Color.Info" Class="act-btn" OnClick="() => Send(ActionKind.Call)">
-                Call @Chips.Format(CallAmount)@(CallAmount >= Player.Stack ? " (All-in)" : "")
-            </MudButton>
-        }
-        else
-        {
-            <MudButton Variant="Variant.Filled" Color="Color.Info" Class="act-btn" OnClick="() => Send(ActionKind.Check)">Check</MudButton>
-        }
-        @if (CanRaise)
-        {
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="act-btn" Disabled="@(_to <= Hand.CurrentBet || _to > MaxTo)"
+        @* 「戻る」は確定から離して左端に小さく置く *@
+        <div class="action-row">
+            <MudButton Variant="Variant.Text" Color="Color.Default" Class="act-btn act-minor" OnClick="() => SetSizing(false)">戻る</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="act-btn act-confirm" Disabled="@(_to <= Hand.CurrentBet || _to > MaxTo)"
                        OnClick="() => Send(ActionKind.Raise)">
-                @(Hand.CurrentBet == 0 ? "Bet" : "Raise")
+                @BetWord @Chips.Format(_to)@(_to == MaxTo ? " (All-in)" : "")
             </MudButton>
-        }
-        @if (Player.Stack > CallAmount)
-        {
-            <MudButton Variant="Variant.Filled" Color="Color.Error" Class="act-btn" OnClick="() => Send(ActionKind.AllIn)">All-in</MudButton>
-        }
-    </div>
+        </div>
+    }
+    else
+    {
+        <div class="action-row">
+            @if (CallAmount > 0)
+            {
+                <MudButton Variant="Variant.Outlined" Color="Color.Default" Class="act-btn" OnClick="() => Send(ActionKind.Fold)">Fold</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Info" Class="act-btn" OnClick="() => Send(ActionKind.Call)">
+                    Call @Chips.Format(CallAmount)@(CallAmount >= Player.Stack ? " (All-in)" : "")
+                </MudButton>
+            }
+            else
+            {
+                @* ただでチェックできるときに降りるのはほぼ押し間違いなので、Fold は左端に小さく出す *@
+                <MudButton Variant="Variant.Text" Color="Color.Default" Class="act-btn act-minor" OnClick="() => Send(ActionKind.Fold)">Fold</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Info" Class="act-btn" OnClick="() => Send(ActionKind.Check)">Check</MudButton>
+            }
+            @if (CanRaise)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="act-btn" OnClick="() => SetSizing(true)">@(BetWord == "Bet" ? "Bet…" : "Raise…")</MudButton>
+            }
+            @if (Player.Stack > CallAmount)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Error" Class="act-btn" OnClick="() => Send(ActionKind.AllIn)">All-in</MudButton>
+            }
+        </div>
+    }
 </div>
 
 @code {
@@ -67,10 +77,12 @@
 
     [Parameter, EditorRequired] public GameState State { get; set; } = default!;
     [Parameter] public EventCallback<Act> OnAct { get; set; }
-    [Parameter] public EventCallback OnResized { get; set; }  // テンキーの開閉で高さが変わった
+    [Parameter] public EventCallback OnResized { get; set; }  // 額を選ぶ画面やテンキーの開閉で高さが変わった
 
     private long _to;
+    private bool _sizing;
     private bool _keypadOpen;
+    private bool _locked;
     private string _key = "";
     private CancellationTokenSource? _repeat;
 
@@ -83,15 +95,29 @@
     private bool CanRaise => MaxTo > Hand.CurrentBet && Player.Stack > CallAmount;
     private bool BelowMin => _to < MinTo && _to < MaxTo;
     private long Step => Math.Max(1, Hand.Blinds.Bb);
+    private string BetWord => Hand.CurrentBet == 0 ? "Bet" : "Raise to";
 
     protected override void OnParametersSet()
     {
-        // 手番やベットが変わったら、額を最小レイズに戻す
+        // 手番やベットが変わったら、普段の画面に戻し、額を最小レイズに戻す
         var key = $"{Hand.Number}-{Hand.Street}-{Hand.ToActId}-{Hand.CurrentBet}";
         if (key == _key) return;
         _key = key;
         _to = Math.Min(MinTo, MaxTo);
+        _sizing = false;
         _keypadOpen = false;
+    }
+
+    // 画面を切り替えた直後は少しの間押せなくする（切り替えたボタンの二度押しで、同じ位置の別のボタンを押さないように）
+    private async Task SetSizing(bool on)
+    {
+        _sizing = on;
+        _keypadOpen = false;
+        _locked = true;
+        await OnResized.InvokeAsync();
+        StateHasChanged();
+        await Task.Delay(InputLock.Milliseconds);
+        _locked = false;
     }
 
     private Task ToggleKeypad()

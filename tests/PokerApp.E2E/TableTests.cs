@@ -40,10 +40,14 @@ public class TableTests(AppFixture app)
         {
             await AddPlayers(page, 3);
             await page.GetByText("最初のハンドを始める").ClickAsync();
+            // 額を選ぶ画面では Fold・Call・All-in を出さない
+            await page.GetByRole(AriaRole.Button, new() { Name = "Raise…" }).ClickAsync();
+            await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = "Fold", Exact = true })).ToHaveCountAsync(0);
+            await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = "All-in", Exact = true })).ToHaveCountAsync(0);
             // ポット 150 の 100% → 150 を新しく出す
             await page.GetByRole(AriaRole.Button, new() { Name = "100%" }).ClickAsync();
             await Assertions.Expect(page.Locator(".sizer-value")).ToHaveTextAsync("150");
-            await page.GetByRole(AriaRole.Button, new() { Name = "Raise", Exact = true }).ClickAsync();
+            await page.GetByRole(AriaRole.Button, new() { Name = "Raise to 150", Exact = true }).ClickAsync();
             await Assertions.Expect(page.Locator(".pot-total")).ToHaveTextAsync("300");
 
             await page.GetByLabel("元に戻す").ClickAsync();
@@ -83,7 +87,8 @@ public class TableTests(AppFixture app)
             await page.GetByRole(AriaRole.Button, new() { Name = "All-in", Exact = true }).ClickAsync(); // P1
             await page.GetByRole(AriaRole.Button, new() { Name = "Call", Exact = false }).ClickAsync();  // P2
             await page.GetByRole(AriaRole.Button, new() { Name = "Call", Exact = false }).ClickAsync();  // P3
-            await page.GetByRole(AriaRole.Button, new() { Name = "Bet", Exact = true }).ClickAsync();     // フロップ P2
+            await page.GetByRole(AriaRole.Button, new() { Name = "Bet…" }).ClickAsync();                 // フロップ P2
+            await page.GetByRole(AriaRole.Button, new() { Name = "Bet 100", Exact = true }).ClickAsync();
             await page.GetByRole(AriaRole.Button, new() { Name = "Call", Exact = false }).ClickAsync();  // P3
             for (var i = 0; i < 4; i++) await page.GetByRole(AriaRole.Button, new() { Name = "Check", Exact = true }).ClickAsync();
 
@@ -160,6 +165,27 @@ public class TableTests(AppFixture app)
             // 席替え中に UNDO でハンドの途中へ戻ったら、席替えモードを抜ける
             await page.GetByLabel("元に戻す").ClickAsync();
             await Assertions.Expect(page.Locator(".seat-handle")).ToHaveCountAsync(0);
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task 二度押ししても次の人のアクションにはならない()
+    {
+        var (context, page) = await app.OpenAsync();
+        try
+        {
+            await AddPlayers(page, 3);
+            await page.GetByText("最初のハンドを始める").ClickAsync();
+            await Assertions.Expect(page.Locator(".input-lock")).ToHaveCountAsync(0);
+            // P1 の Call を素早く 2 回押す。2 回目は P2 の同じ位置のボタンに当たるが、受け付けない
+            var call = await page.GetByRole(AriaRole.Button, new() { Name = "Call", Exact = false }).BoundingBoxAsync();
+            await page.Mouse.ClickAsync(call!.X + call.Width / 2, call.Y + call.Height / 2, new() { ClickCount = 2 });
+            await Assertions.Expect(page.Locator(".pot-total")).ToHaveTextAsync("250");
+            await Assertions.Expect(page.Locator(".action-name")).ToHaveTextAsync("P2");
         }
         finally
         {
