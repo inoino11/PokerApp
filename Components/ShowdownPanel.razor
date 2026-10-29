@@ -5,6 +5,11 @@
         <span class="showdown-amount">@Chips.Format(Pot.Amount)</span>
         の勝者
     </div>
+    @* ポットは 1 つずつ決めるので、全体でいくつあるかが分かるように、このあと決めるポットを出す *@
+    @if (LaterPots.Count > 0)
+    {
+        <div class="showdown-later">このあと: @string.Join(" / ", LaterPots.Select(p => $"Side pot {Chips.Format(p.Amount)}"))</div>
+    }
     <div class="showdown-players">
         @foreach (var p in State.Players.Where(p => Pot.EligibleIds.Contains(p.Id)))
         {
@@ -25,6 +30,7 @@
     [Parameter, EditorRequired] public GameState State { get; set; } = default!;
     [Parameter] public int PotIndex { get; set; }
     [Parameter, EditorRequired] public Pot Pot { get; set; } = default!;
+    [Parameter] public IReadOnlyList<Pot> LaterPots { get; set; } = [];
     [Parameter] public EventCallback<ImmutableList<int>> OnConfirm { get; set; }
 
     private readonly HashSet<int> _selected = [];

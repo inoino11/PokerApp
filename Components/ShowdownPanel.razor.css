@@ -15,6 +15,12 @@
     margin: 0 4px;
 }
 
+.showdown-later {
+    margin-top: -4px;
+    font-size: 0.8rem;
+    color: var(--mud-palette-text-secondary);
+}
+
 .showdown-players {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));

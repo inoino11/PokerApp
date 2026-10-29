@@ -93,9 +93,13 @@ public class TableTests(AppFixture app)
             for (var i = 0; i < 4; i++) await page.GetByRole(AriaRole.Button, new() { Name = "Check", Exact = true }).ClickAsync();
 
             await Assertions.Expect(page.GetByText("Main pot")).ToBeVisibleAsync();
+            // 勝者を選ぶ間はポットの帯を隠し、このあと決めるポットを出す
+            await Assertions.Expect(page.Locator(".pot-bar")).ToHaveCountAsync(0);
+            await Assertions.Expect(page.Locator(".showdown-later")).ToBeVisibleAsync();
             await page.Locator(".winner-btn", new() { HasTextString = "P1" }).ClickAsync();
             await page.GetByRole(AriaRole.Button, new() { Name = "確定", Exact = true }).ClickAsync();
-            await Assertions.Expect(page.GetByText("Side pot", new() { Exact = false })).ToBeVisibleAsync();
+            await Assertions.Expect(page.Locator(".showdown-title")).ToContainTextAsync("Side pot");
+            await Assertions.Expect(page.Locator(".showdown-later")).ToHaveCountAsync(0);
             await page.Locator(".winner-btn", new() { HasTextString = "P2" }).ClickAsync();
             await page.GetByRole(AriaRole.Button, new() { Name = "確定", Exact = true }).ClickAsync();
             await Assertions.Expect(page.GetByText("ハンド #1 の結果")).ToBeVisibleAsync();

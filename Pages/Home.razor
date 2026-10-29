@@ -42,17 +42,13 @@
         <PlayerList State="S" OnPlayerClick="OpenPlayer" OnAdd="AddPlayer" SeatMode="_seatMode" SeatModeChanged="SetSeatMode" />
     </div>
 
-    @* --- ポット（席替え中は一覧を広く使うため、ポットと操作を隠す） --- *@
-    @if (!_seatMode && S.Hand is { } hand)
+    @* --- ポット（席替え中は一覧を広く使うため、ポットと操作を隠す。勝者を選ぶ間は、パネルの見出しにポットの額が出るので隠す） --- *@
+    @if (!_seatMode && S.Hand is { } hand && GameEngine.PendingPot(hand) is null)
     {
         <div class="pot-bar">
             <span class="pot-street street-@hand.Street.ToString().ToLowerInvariant()">@StreetName(hand.Street)</span>
             <span class="pot-label">Pot</span>
             <span class="pot-total">@Chips.Format(GameEngine.PotTotal(hand))</span>
-            @if (hand.Street == Street.Showdown && GameEngine.Pots(hand) is { Count: > 1 } pots)
-            {
-                <span class="pot-side">（@string.Join(" / ", pots.Select(p => Chips.Format(p.Amount)))）</span>
-            }
         </div>
     }
 
@@ -64,7 +60,7 @@
         }
         else if (GameEngine.PendingPot(S.Hand) is { } pending)
         {
-            <ShowdownPanel State="S" PotIndex="pending.Index" Pot="pending.Pot" OnConfirm="ChooseWinners" />
+            <ShowdownPanel State="S" PotIndex="pending.Index" Pot="pending.Pot" LaterPots="GameEngine.Pots(S.Hand).Skip(pending.Index + 1).ToList()" OnConfirm="ChooseWinners" />
         }
         else if (S.Hand.ToActId is not null)
         {
