@@ -1,7 +1,7 @@
 @* ショーダウンで 1 つのポットの勝者を選ぶ。複数選べばチョップ *@
 <div class="showdown-panel">
     <div class="showdown-title">
-        @(PotIndex == 0 ? "Main pot" : $"Side pot {PotIndex}")
+        @(PotIndex == 0 ? "Main pot" : "Side pot")
         <span class="showdown-amount">@Chips.Format(Pot.Amount)</span>
         の勝者
     </div>
