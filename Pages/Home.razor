@@ -232,36 +232,6 @@
                 await Clock.ResetAsync();
                 Snackbar.Add("新しいゲームにしました", Severity.Success);
                 break;
-            case SettingsAction.Export:
-                await Export();
-                break;
-            case SettingsAction.Import when r.Json is not null:
-                await Import(r.Json);
-                break;
-        }
-    }
-
-    private async Task Export()
-    {
-        var backup = new BackupFile("PokerApp", 1, Game.ToSaved(), Clock.Snapshot, [.. Presets.UserPresets]);
-        var json = System.Text.Json.JsonSerializer.Serialize(backup, AppJsonContext.Default.BackupFile);
-        await Device.DownloadAsync($"pokerapp-{DateTime.Now:yyyyMMdd-HHmm}.json", json);
-    }
-
-    private async Task Import(string json)
-    {
-        try
-        {
-            var backup = System.Text.Json.JsonSerializer.Deserialize(json, AppJsonContext.Default.BackupFile);
-            if (backup is not { App: "PokerApp" }) throw new InvalidDataException("このアプリのバックアップではありません。");
-            await Game.RestoreAsync(backup.Game);
-            await Clock.RestoreAsync(backup.Clock);
-            await Presets.ReplaceUserPresetsAsync(backup.Presets);
-            Snackbar.Add("バックアップから復元しました", Severity.Success);
-        }
-        catch (Exception e)
-        {
-            Snackbar.Add("復元できませんでした: " + e.Message, Severity.Error);
         }
     }
 

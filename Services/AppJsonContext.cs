@@ -7,7 +7,6 @@ namespace PokerApp.Services;
 /// </summary>
 [JsonSourceGenerationOptions(UseStringEnumConverter = true)]
 [JsonSerializable(typeof(SavedGame))]
-[JsonSerializable(typeof(BackupFile))]
 [JsonSerializable(typeof(ClockData))]
 [JsonSerializable(typeof(List<BlindPreset>))]
 public sealed partial class AppJsonContext : JsonSerializerContext;

@@ -3,7 +3,7 @@ using Microsoft.JSInterop;
 namespace PokerApp.Services;
 
 /// <summary>
-/// 端末と画面の機能（画面を消さない・レベルアップの通知・手番へのスクロール・席替えのドラッグ・ファイルの保存）の窓口。JS の呼び出しはここに閉じ込める。
+/// 端末と画面の機能（画面を消さない・レベルアップの通知・手番へのスクロール・席替えのドラッグ）の窓口。JS の呼び出しはここに閉じ込める。
 /// </summary>
 public sealed class DeviceService(IJSRuntime js)
 {
@@ -30,6 +30,4 @@ public sealed class DeviceService(IJSRuntime js)
         js.InvokeVoidAsync("seatDrag.register", target);
 
     public ValueTask UnregisterSeatDragAsync() => js.InvokeVoidAsync("seatDrag.unregister");
-
-    public ValueTask DownloadAsync(string fileName, string text) => js.InvokeVoidAsync("appDevice.download", fileName, text);
 }

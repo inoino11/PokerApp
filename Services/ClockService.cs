@@ -96,10 +96,6 @@ public sealed class ClockService(ILocalStorageService storage, TimeProvider time
 
     public Task ResetAsync() => SaveAsync(new ClockData(0, false, false, 0, _time.GetUtcNow()));
 
-    public ClockData Snapshot => _d;
-
-    public Task RestoreAsync(ClockData data) => SaveAsync(data);
-
     private async Task SaveAsync(ClockData d)
     {
         _d = d;

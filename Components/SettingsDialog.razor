@@ -1,4 +1,4 @@
-@* 設定。ブラインド・プリセット・チップ単位・バックアップ・新しいゲーム *@
+@* 設定。ブラインド・プリセット・チップ単位・新しいゲーム *@
 @inject PresetService Presets
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
@@ -79,16 +79,10 @@
 
         <MudDivider Class="my-3" />
 
-        @* --- データ --- *@
-        <MudText Typo="Typo.subtitle2" Class="mb-1">データ</MudText>
-        <div class="d-flex flex-wrap gap-2">
-            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Download" OnClick="() => Close(SettingsAction.Export)">バックアップを保存</MudButton>
-            <label class="mud-button-root mud-button mud-button-outlined mud-button-outlined-default mud-button-outlined-size-medium mud-ripple file-label">
-                <MudIcon Icon="@Icons.Material.Filled.Upload" Size="Size.Small" Class="mr-2" />バックアップから復元
-                <InputFile OnChange="Import" accept=".json,application/json" hidden />
-            </label>
-            <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.RestartAlt" OnClick="NewGame">新しいゲーム</MudButton>
-        </div>
+        @* --- ゲーム --- *@
+        <MudText Typo="Typo.subtitle2" Class="mb-1">ゲーム</MudText>
+        <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.RestartAlt" OnClick="NewGame">新しいゲーム</MudButton>
+        <MudText Typo="Typo.caption" Class="d-block mt-1">ゲームの状態はこの端末にだけ一時的に保存されます。一戦が終わったら「新しいゲーム」で消してください。</MudText>
 
         <MudText Typo="Typo.caption" Class="d-block mt-4">@Notices.NoGambling</MudText>
         <MudText Typo="Typo.caption" Class="d-block">@AppInfo.DisplayName @AppInfo.Version</MudText>
@@ -173,22 +167,6 @@
         if (ok == true) Close(SettingsAction.NewGame);
     }
 
-    private async Task Import(InputFileChangeEventArgs e)
-    {
-        try
-        {
-            using var reader = new StreamReader(e.File.OpenReadStream(5_000_000));
-            var json = await reader.ReadToEndAsync();
-            var ok = await Dialogs.ShowMessageBoxAsync("バックアップから復元",
-                "今のゲームとプリセットを、ファイルの内容に置き換えますか？", yesText: "復元", cancelText: "やめる");
-            if (ok == true) MudDialog.Close(DialogResult.Ok(new SettingsResult(SettingsAction.Import, null, json)));
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add("ファイルを読めませんでした: " + ex.Message, Severity.Error);
-        }
-    }
-
     private void Apply()
     {
         if (_levels.Any(l => l.Bb <= 0 || l.Sb < 0 || l.Third < 0))
@@ -197,8 +175,8 @@
             return;
         }
         if (_levels.Count == 0) return;
-        MudDialog.Close(DialogResult.Ok(new SettingsResult(SettingsAction.Apply, Build(), null)));
+        MudDialog.Close(DialogResult.Ok(new SettingsResult(SettingsAction.Apply, Build())));
     }
 
-    private void Close(SettingsAction action) => MudDialog.Close(DialogResult.Ok(new SettingsResult(action, null, null)));
+    private void Close(SettingsAction action) => MudDialog.Close(DialogResult.Ok(new SettingsResult(action, null)));
 }

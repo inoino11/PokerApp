@@ -83,7 +83,7 @@ window.seatDrag = {
     },
 };
 
-// 端末の機能（画面を消さない・通知音・ファイルの保存）
+// 端末の機能（画面を消さない・通知音・手番へのスクロール）
 window.appDevice = {
     _lock: null,
     _wantLock: false,
@@ -129,14 +129,5 @@ window.appDevice = {
 
     scrollToActive() {
         document.querySelector('.row-to-act')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    },
-
-    download(fileName, text) {
-        const blob = new Blob([text], { type: 'application/json' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = fileName;
-        a.click();
-        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     },
 };

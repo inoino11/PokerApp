@@ -10,11 +10,6 @@ namespace PokerApp.Services;
 public sealed record SavedGame(int Version, GameState Base, List<GameCommand> Commands, List<GameCommand> Redo);
 
 /// <summary>
-/// バックアップファイルの形式。
-/// </summary>
-public sealed record BackupFile(string App, int Version, SavedGame Game, ClockData Clock, List<BlindPreset> Presets);
-
-/// <summary>
 /// ゲームの状態と UNDO / REDO の履歴を持つ。操作は必ず ExecuteAsync を通し、そのたびに端末へ保存する。
 /// </summary>
 public sealed class GameStateService(ILocalStorageService storage)
@@ -106,12 +101,6 @@ public sealed class GameStateService(ILocalStorageService storage)
     }
 
     public SavedGame ToSaved() => new(FormatVersion, _base, [.. _commands], [.. _redo]);
-
-    public async Task RestoreAsync(SavedGame saved)
-    {
-        Load(saved);
-        await SaveAsync();
-    }
 
     /// <summary>
     /// 履歴を再生する。途中で当てられない操作があれば、そこから先は捨てる（保存データが壊れていても起動を止めない）。

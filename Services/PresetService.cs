@@ -74,14 +74,6 @@ public sealed class PresetService(ILocalStorageService storage)
         await PersistAsync();
     }
 
-    public ImmutableList<BlindPreset> UserPresets => _user;
-
     private ValueTask PersistAsync() =>
         storage.SetItemAsStringAsync(StorageKeys.Presets, JsonSerializer.Serialize(_user.ToList(), AppJsonContext.Default.ListBlindPreset));
-
-    public async Task ReplaceUserPresetsAsync(IEnumerable<BlindPreset> presets)
-    {
-        _user = presets.Where(p => !p.Builtin && Builtins.All(b => b.Name != p.Name)).ToImmutableList();
-        await PersistAsync();
-    }
 }
