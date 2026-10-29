@@ -7,5 +7,5 @@ namespace PokerApp.Components;
 /// </summary>
 public static class InputLock
 {
-    public const int Milliseconds = 350;
+    public const int Milliseconds = 175;
 }
