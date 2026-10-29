@@ -5,20 +5,19 @@
         <span class="showdown-amount">@Chips.Format(Pot.Amount)</span>
         の勝者
     </div>
-    <div class="showdown-hint">勝った人をタップ（引き分けなら複数）</div>
     <div class="showdown-players">
         @foreach (var p in State.Players.Where(p => Pot.EligibleIds.Contains(p.Id)))
         {
             var id = p.Id;
             <button type="button" class="winner-btn @(_selected.Contains(id) ? "winner-on" : "")" @onclick="() => Toggle(id)">
                 <span class="player-color" style="background:@Chips.PlayerColors[p.ColorIndex % Chips.PlayerColors.Length]"></span>
-                @p.Name
+                <span class="winner-name">@p.Name</span>
             </button>
         }
     </div>
     <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large" Disabled="_selected.Count == 0"
                OnClick="Confirm">
-        @(_selected.Count > 1 ? $"{_selected.Count} 人で Chop" : "勝者に決定")
+        @(_selected.Count == 0 ? "勝者未選択" : "確定")
     </MudButton>
 </div>
 

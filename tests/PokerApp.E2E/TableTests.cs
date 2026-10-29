@@ -94,10 +94,10 @@ public class TableTests(AppFixture app)
 
             await Assertions.Expect(page.GetByText("Main pot")).ToBeVisibleAsync();
             await page.Locator(".winner-btn", new() { HasTextString = "P1" }).ClickAsync();
-            await page.GetByRole(AriaRole.Button, new() { Name = "勝者に決定" }).ClickAsync();
+            await page.GetByRole(AriaRole.Button, new() { Name = "確定", Exact = true }).ClickAsync();
             await Assertions.Expect(page.GetByText("Side pot 1")).ToBeVisibleAsync();
             await page.Locator(".winner-btn", new() { HasTextString = "P2" }).ClickAsync();
-            await page.GetByRole(AriaRole.Button, new() { Name = "勝者に決定" }).ClickAsync();
+            await page.GetByRole(AriaRole.Button, new() { Name = "確定", Exact = true }).ClickAsync();
             await Assertions.Expect(page.GetByText("ハンド #1 の結果")).ToBeVisibleAsync();
             await Assertions.Expect(page.Locator(".player-stack").First).ToHaveTextAsync("3,000");
         }
@@ -238,7 +238,7 @@ public class TableTests(AppFixture app)
             await page.GetByRole(AriaRole.Button, new() { Name = "All-in", Exact = true }).ClickAsync();
             await page.GetByRole(AriaRole.Button, new() { Name = "Call", Exact = false }).ClickAsync();
             await page.Locator(".winner-btn", new() { HasTextString = "P1" }).ClickAsync();
-            await page.GetByRole(AriaRole.Button, new() { Name = "勝者に決定" }).ClickAsync();
+            await page.GetByRole(AriaRole.Button, new() { Name = "確定", Exact = true }).ClickAsync();
             var stacks = page.Locator(".player-stack");
             await Assertions.Expect(stacks.Nth(1)).ToHaveTextAsync("0");
 
