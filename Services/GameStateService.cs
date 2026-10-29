@@ -14,7 +14,7 @@ public sealed record SavedGame(int Version, GameState Base, List<GameCommand> Co
 /// </summary>
 public sealed class GameStateService(ILocalStorageService storage)
 {
-    public const int MaxHistory = 500;
+    public const int MaxHistory = 100;  // 何手も前まで戻すことはまずないので、保存と起動を軽くする
     private const int FormatVersion = 1;
 
     private GameState _base = GameEngine.NewGame(PresetService.DefaultSettings);
