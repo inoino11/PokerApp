@@ -15,29 +15,25 @@
 
         <MudDivider Class="my-3" />
 
-        <div class="d-flex align-center justify-space-between">
-            <div>
-                <div class="dlg-label">手元のチップ@(InHand ? "（ポットに出した分を除く）" : "")</div>
-                <div class="dlg-stack">@Chips.Format(_stack)</div>
-            </div>
-            @if (!_editStack)
-            {
-                <MudButton Variant="Variant.Outlined" Disabled="Player.Status == PlayerStatus.Left" OnClick="() => _editStack = true">額を変える</MudButton>
-            }
+        @* 数値として読めない内容で確定したら、直前に読めた値へ戻す *@
+        <div class="d-flex align-end gap-2">
+            <MudTextField @ref="_stackField" T="string" Value="_stackText" ValueChanged="OnStackTextChanged" Label="@($"手元のチップ{(InHand ? "（ポットに出した分を除く）" : "")}")"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" InputMode="InputMode.numeric" Class="flex-grow-1 dlg-stack-input"
+                          Disabled="Player.Status == PlayerStatus.Left" />
+            <MudButton Variant="Variant.Outlined" Disabled="_stack == Player.Stack" OnClick="ConfirmStack">変更</MudButton>
         </div>
-        @if (_editStack)
+        @if (Player.Status != PlayerStatus.Left)
         {
-            <div class="d-flex gap-1 my-2">
+            <div class="d-flex gap-1 mt-2">
                 @foreach (var add in QuickAdds)
                 {
-                    <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="() => _stack += add">+@Chips.Format(add)</MudButton>
+                    <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="() => SetStack(_stack + add)">+@Chips.Format(add)</MudButton>
                 }
             </div>
-            <Keypad @bind-Value="_stack" OnDone="ConfirmStack" />
-            @if (_stack > Player.Stack)
-            {
-                <MudCheckBox @bind-Value="_countAsBuyIn" Label="増えた分をリバイとして精算に計上する" Color="Color.Primary" Dense="true" Class="mt-2" />
-            }
+        }
+        @if (_stack > Player.Stack)
+        {
+            <MudCheckBox @bind-Value="_countAsBuyIn" Label="増えた分をリバイとして精算に計上する" Color="Color.Primary" Dense="true" Class="mt-1" />
         }
 
         <MudDivider Class="my-3" />
@@ -72,7 +68,8 @@
 
     private string _name = "";
     private long _stack;
-    private bool _editStack;
+    private string _stackText = "";
+    private MudTextField<string>? _stackField;
     private bool _countAsBuyIn = true;
 
     private Player Player => State.GetPlayer(PlayerId);
@@ -83,18 +80,23 @@
     protected override void OnInitialized()
     {
         _name = Player.Name;
-        _stack = Player.Stack;
+        SetStack(Player.Stack);
     }
 
-    private void ConfirmStack()
+    private void SetStack(long stack)
     {
-        if (_stack == Player.Stack)
-        {
-            _editStack = false;
-            return;
-        }
-        Close(new SetStack(Player.Id, _stack, _countAsBuyIn && _stack > Player.Stack));
+        _stack = stack;
+        _stackText = Chips.Format(stack);
     }
+
+    // 確定した内容と表示する文字列が同じだと MudTextField は表示を書き戻さないので、自分で書き直す
+    private async Task OnStackTextChanged(string text)
+    {
+        SetStack(Chips.TryParse(text, out var v) ? v : _stack);
+        if (_stackField is not null) await _stackField.SetTextAsync(_stackText);
+    }
+
+    private void ConfirmStack() => Close(new SetStack(Player.Id, _stack, _countAsBuyIn && _stack > Player.Stack));
 
     private void Close(GameCommand command) => MudDialog.Close(DialogResult.Ok(command));
 }

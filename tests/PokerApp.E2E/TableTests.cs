@@ -68,10 +68,15 @@ public class TableTests(AppFixture app)
             await AddPlayers(page, 3);
             // P1 の手元を 1,000 にする
             await page.Locator(".player-row").First.ClickAsync();
-            await page.GetByRole(AriaRole.Button, new() { Name = "額を変える" }).ClickAsync();
-            foreach (var key in new[] { "C", "1", "000" })
-                await page.Locator(".keypad-key", new() { HasTextString = key }).First.ClickAsync();
-            await page.GetByRole(AriaRole.Button, new() { Name = "決定" }).ClickAsync();
+            var stack = page.Locator(".dlg-stack-input input");
+            // 数値として読めなければ直前の値に戻る
+            await stack.FillAsync("abc");
+            await stack.PressAsync("Tab");
+            await Assertions.Expect(stack).ToHaveValueAsync("10,000");
+            await stack.FillAsync("１，０００");
+            await stack.PressAsync("Tab");
+            await Assertions.Expect(stack).ToHaveValueAsync("1,000");
+            await page.GetByRole(AriaRole.Button, new() { Name = "変更" }).Nth(1).ClickAsync();
             await Assertions.Expect(page.Locator(".player-stack").First).ToHaveTextAsync("1,000");
 
             await page.GetByText("最初のハンドを始める").ClickAsync();

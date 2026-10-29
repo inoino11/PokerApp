@@ -5,14 +5,7 @@
     border-radius: 50%;
 }
 
-.dlg-label {
-    font-size: 0.8rem;
-    color: var(--mud-palette-text-secondary);
-}
-
-.dlg-stack {
-    font-size: 1.6rem;
-    font-weight: 700;
+::deep .dlg-stack-input input {
     font-variant-numeric: tabular-nums;
 }
 

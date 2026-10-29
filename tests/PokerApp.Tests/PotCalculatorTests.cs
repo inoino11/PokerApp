@@ -76,3 +76,26 @@ public class PotCalculatorTests
         Assert.Equal(amount, r.Values.Sum());
     }
 }
+
+public class ChipsTests
+{
+    [Theory]
+    [InlineData("12000", 12000L)]
+    [InlineData("12,000", 12000L)]
+    [InlineData("１２，０００", 12000L)]
+    [InlineData(" 500 ", 500L)]
+    [InlineData("0", 0L)]
+    public void 読める額(string text, long expected)
+    {
+        Assert.True(Models.Chips.TryParse(text, out var v));
+        Assert.Equal(expected, v);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("abc")]
+    [InlineData("-100")]
+    [InlineData("1.5")]
+    [InlineData("1000000000000")]
+    public void 読めない額(string text) => Assert.False(Models.Chips.TryParse(text, out _));
+}
