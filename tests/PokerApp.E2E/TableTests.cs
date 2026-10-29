@@ -95,4 +95,37 @@ public class TableTests(AppFixture app)
             await context.CloseAsync();
         }
     }
+
+    [Fact]
+    public async Task 席替えモードでドラッグして並べ替え_元に戻せる()
+    {
+        var (context, page) = await app.OpenAsync();
+        try
+        {
+            await AddPlayers(page, 4);
+            await page.GetByRole(AriaRole.Button, new() { Name = "席替え" }).ClickAsync();
+
+            // P4 のつまみを P1 の行の上の方まで引っぱる
+            var handle = await page.Locator(".seat-handle").Nth(3).BoundingBoxAsync();
+            var first = await page.Locator(".player-row").First.BoundingBoxAsync();
+            await page.Mouse.MoveAsync(handle!.X + handle.Width / 2, handle.Y + handle.Height / 2);
+            await page.Mouse.DownAsync();
+            for (var i = 1; i <= 10; i++)
+                await page.Mouse.MoveAsync(handle.X + handle.Width / 2, handle.Y + handle.Height / 2 + (first!.Y + 5 - handle.Y - handle.Height / 2) * i / 10);
+            await page.Mouse.UpAsync();
+
+            var names = page.Locator(".player-name");
+            await Assertions.Expect(names.First).ToHaveTextAsync("P4");
+            await Assertions.Expect(names.Nth(1)).ToHaveTextAsync("P1");
+
+            await page.GetByRole(AriaRole.Button, new() { Name = "完了" }).ClickAsync();
+            await page.GetByLabel("元に戻す").ClickAsync();
+            await Assertions.Expect(names.First).ToHaveTextAsync("P1");
+            await Assertions.Expect(names.Nth(3)).ToHaveTextAsync("P4");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
 }

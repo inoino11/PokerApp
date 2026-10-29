@@ -19,7 +19,8 @@ public static class GameEngine
         RenamePlayer c => Rename(s, c),
         SetStack c => SetStack(s, c),
         SetStatus c => SetStatus(s, c),
-        MovePlayer c => Move(s, c),
+        MovePlayer c => Seat(s, c.PlayerId, s.Seated.ToList().FindIndex(p => p.Id == c.PlayerId) + Math.Sign(c.Direction)),
+        SeatPlayer c => Seat(s, c.PlayerId, c.ToIndex),
         StartHand c => StartHand(s, c),
         Act c => Act(s, c),
         ChooseWinners c => ChooseWinners(s, c),
@@ -153,15 +154,21 @@ public static class GameEngine
         return UpdatePlayer(s, c.PlayerId, p => p with { Status = c.Status });
     }
 
-    static GameState Move(GameState s, MovePlayer c)
+    /// <summary>
+    /// 着席者の中で toIndex の位置へ動かす。退席した人はリストの元の位置に残す（前のボタンの席から数えるため）。
+    /// </summary>
+    static GameState Seat(GameState s, int playerId, int toIndex)
     {
         var seated = s.Seated.ToList();
-        var i = seated.FindIndex(p => p.Id == c.PlayerId);
-        var j = i + Math.Sign(c.Direction);
-        if (i < 0 || j < 0 || j >= seated.Count) return s;
-        var a = s.Players.IndexOf(seated[i]);
-        var b = s.Players.IndexOf(seated[j]);
-        return s with { Players = s.Players.SetItem(a, seated[j]).SetItem(b, seated[i]) };
+        var from = seated.FindIndex(p => p.Id == playerId);
+        if (from < 0 || toIndex < 0 || toIndex >= seated.Count || toIndex == from) return s;
+        var moving = seated[from];
+        seated.RemoveAt(from);
+        seated.Insert(toIndex, moving);
+
+        var next = 0;
+        var players = s.Players.Select(p => p.Status == PlayerStatus.Left ? p : seated[next++]).ToImmutableList();
+        return s with { Players = players };
     }
 
     // --- ハンドの開始 ---

@@ -255,4 +255,22 @@ public class GameEngineTests
         var g = new TestGame(1, 1, 1).Do(new MovePlayer(3, -1));
         Assert.Equal([1, 3, 2], g.State.Players.Select(p => p.Id));
     }
+
+    [Fact]
+    public void 席替えは離れた位置へ一度に動かせる()
+    {
+        var g = new TestGame(1, 1, 1, 1).Do(new SeatPlayer(4, 0));
+        Assert.Equal([4, 1, 2, 3], g.State.Players.Select(p => p.Id));
+        g.Do(new SeatPlayer(4, 3));
+        Assert.Equal([1, 2, 3, 4], g.State.Players.Select(p => p.Id));
+    }
+
+    [Fact]
+    public void 席替えでは退席した人の位置は動かさない()
+    {
+        var g = new TestGame(1, 1, 1, 1).Do(new SetStatus(2, PlayerStatus.Left)).Do(new SeatPlayer(4, 0));
+        // 着席者の並びは 4,1,3。退席した P2 は 2 番目の位置に残る
+        Assert.Equal([4, 2, 1, 3], g.State.Players.Select(p => p.Id));
+        Assert.Equal([4, 1, 3], g.State.Seated.Select(p => p.Id));
+    }
 }

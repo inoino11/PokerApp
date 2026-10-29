@@ -98,7 +98,48 @@
     opacity: 0.45;
 }
 
-.player-add {
+/* --- 席替え --- */
+.player-row {
+    transition: transform 0.15s;
+}
+
+.seat-mode .player-row {
+    cursor: default;
+}
+
+.seat-handle {
+    display: flex;
+    align-items: center;
+    align-self: stretch;
+    padding: 0 4px 0 8px;
+    color: var(--mud-palette-text-secondary);
+    cursor: grab;
+    touch-action: none;
+}
+
+.player-row.row-dragging {
+    transition: none;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    opacity: 1;
+}
+
+
+.list-tools {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.seat-hint {
+    flex: 1;
+    font-size: 0.85rem;
+    color: var(--mud-palette-text-secondary);
+}
+
+.list-btn {
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -109,4 +150,9 @@
     background: transparent;
     color: var(--mud-palette-text-secondary);
     font-size: 0.9rem;
+}
+
+.list-btn.seat-toggle {
+    flex: 0 0 auto;
+    padding: 0 14px;
 }

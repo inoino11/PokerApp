@@ -13,6 +13,7 @@ namespace PokerApp.Models;
 [JsonDerivedType(typeof(SetStack), "stack")]
 [JsonDerivedType(typeof(SetStatus), "status")]
 [JsonDerivedType(typeof(MovePlayer), "move")]
+[JsonDerivedType(typeof(SeatPlayer), "seat")]
 [JsonDerivedType(typeof(StartHand), "start")]
 [JsonDerivedType(typeof(Act), "act")]
 [JsonDerivedType(typeof(ChooseWinners), "winners")]
@@ -31,9 +32,14 @@ public sealed record SetStack(int PlayerId, long Stack, bool CountAsBuyIn) : Gam
 public sealed record SetStatus(int PlayerId, PlayerStatus Status) : GameCommand;
 
 /// <summary>
-/// 席を隣の着席者と入れ替える。Direction は -1（上へ）か +1（下へ）。
+/// 席を隣の着席者と入れ替える。Direction は -1（上へ）か +1（下へ）。画面からは使わないが、保存済みの履歴を読むために残す。
 /// </summary>
 public sealed record MovePlayer(int PlayerId, int Direction) : GameCommand;
+
+/// <summary>
+/// 着席者の並びの中で ToIndex の位置へ動かす（席替えのドラッグ）。
+/// </summary>
+public sealed record SeatPlayer(int PlayerId, int ToIndex) : GameCommand;
 
 /// <summary>
 /// ハンドを始める。レベルは時計から呼び出し側で決める（再生しても同じ結果にするため）。

@@ -1,5 +1,5 @@
 @page "/"
-@implements IDisposable
+@implements IAsyncDisposable
 @inject GameStateService Game
 @inject ClockService Clock
 @inject PresetService Presets
@@ -35,15 +35,15 @@
         @if (!S.Seated.Any())
         {
             <div class="empty-hint">
-                <MudText Typo="Typo.body1">プレイヤーを追加して始めましょう。</MudText>
+                <MudText Typo="Typo.body1">「追加」でプレイヤーを足して始めましょう。</MudText>
                 <MudText Typo="Typo.caption">名前は P1, P2… と自動で付きます。あとから行をタップして変えられます。</MudText>
             </div>
         }
-        <PlayerList State="S" OnPlayerClick="OpenPlayer" OnAdd="AddPlayer" />
+        <PlayerList State="S" OnPlayerClick="OpenPlayer" OnAdd="AddPlayer" @bind-SeatMode="_seatMode" />
     </div>
 
-    @* --- ポット --- *@
-    @if (S.Hand is { } hand)
+    @* --- ポット（席替え中は一覧を広く使うため、ポットと操作を隠す） --- *@
+    @if (!_seatMode && S.Hand is { } hand)
     {
         <div class="pot-bar">
             <span class="pot-street">@StreetName(hand.Street)</span>
@@ -59,7 +59,7 @@
     }
 
     @* --- 操作 --- *@
-    <div class="table-controls">
+    <div class="table-controls @(_seatMode ? "d-none" : "")">
         @if (S.Hand is null)
         {
             <IdlePanel State="S" NextLevel="EffectiveLevel(Clock.Level(S.Settings))" OnStart="StartHand" />
@@ -81,6 +81,8 @@
     private bool _ticking;
     private int? _shownToAct;
     private bool _scrollToActive;
+    private bool _seatMode;
+    private DotNetObjectReference<Home>? _self;
 
     private GameState S => Game.State;
 
@@ -94,7 +96,12 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender) await Device.KeepAwakeAsync();
+        if (firstRender)
+        {
+            await Device.KeepAwakeAsync();
+            _self = DotNetObjectReference.Create(this);
+            await Device.RegisterSeatDragAsync(_self);
+        }
         // テンキーを開くと席の一覧が狭くなるので、手番が変わるたびに手番の人を見える位置へ
         var toAct = S.Hand?.ToActId;
         if (toAct is not null && (toAct != _shownToAct || _scrollToActive)) await Device.ScrollToActiveAsync();
@@ -145,6 +152,15 @@
     }
 
     private Task AddPlayer() => Execute(new AddPlayer(S.Settings.StartingStack));
+
+    // 席替えのドラッグを離したとき（from, to は着席者の並びでの位置）
+    [JSInvokable]
+    public async Task OnSeatDropped(int from, int to)
+    {
+        var seated = S.Seated.ToList();
+        if (from < 0 || from >= seated.Count) return;
+        await Execute(new SeatPlayer(seated[from].Id, to));
+    }
 
     private Task Act(Act act) => Execute(act);
 
@@ -233,9 +249,18 @@
         }
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         _timer?.Dispose();
         Game.Changed -= OnGameChanged;
+        if (_self is null) return;
+        try
+        {
+            await Device.UnregisterSeatDragAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+        _self.Dispose();
     }
 }

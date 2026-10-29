@@ -1,4 +1,4 @@
-@* プレイヤーのメニュー。名前・手元の額・離席・退席・席の移動。結果は 1 つの GameCommand で返す *@
+@* プレイヤーのメニュー。名前・手元の額・離席・退席。結果は 1 つの GameCommand で返す *@
 <MudDialog>
     <TitleContent>
         <div class="d-flex align-center gap-2">
@@ -54,11 +54,6 @@
             }
             <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="InPot"
                        OnClick="() => Close(new SetStatus(Player.Id, PlayerStatus.Left))">退席する</MudButton>
-            <MudSpacer />
-            <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Variant="Variant.Outlined" aria-label="席を上へ"
-                           OnClick="() => Close(new MovePlayer(Player.Id, -1))" />
-            <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Variant="Variant.Outlined" aria-label="席を下へ"
-                           OnClick="() => Close(new MovePlayer(Player.Id, 1))" />
         </div>
         @if (InPot)
         {
