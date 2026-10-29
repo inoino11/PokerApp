@@ -59,11 +59,6 @@
     color: var(--mud-palette-text-secondary);
 }
 
-.pot-hand {
-    font-size: 0.75rem;
-    color: var(--mud-palette-text-secondary);
-}
-
 .table-controls {
     padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
     background: var(--mud-palette-background-gray);
