@@ -40,9 +40,15 @@
     line-height: 1.4;
     padding: 1px 8px;
     border-radius: 10px;
-    background: var(--mud-palette-primary);
-    color: var(--mud-palette-primary-text);
+    color: #fff;
 }
+
+/* ストリートごとに色を分け、進んだことがひと目で分かるようにする。白い文字が読める濃さにそろえる */
+.street-preflop { background: #546e7a; }
+.street-flop { background: #2e7d32; }
+.street-turn { background: #e65100; }
+.street-river { background: #1565c0; }
+.street-showdown { background: #6a1b9a; }
 
 .pot-label {
     font-size: 0.8rem;

@@ -46,7 +46,7 @@
     @if (!_seatMode && S.Hand is { } hand)
     {
         <div class="pot-bar">
-            <span class="pot-street">@StreetName(hand.Street)</span>
+            <span class="pot-street street-@hand.Street.ToString().ToLowerInvariant()">@StreetName(hand.Street)</span>
             <span class="pot-label">Pot</span>
             <span class="pot-total">@Chips.Format(GameEngine.PotTotal(hand))</span>
             @if (hand.Street == Street.Showdown && GameEngine.Pots(hand) is { Count: > 1 } pots)
