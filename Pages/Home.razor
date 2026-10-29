@@ -1,0 +1,241 @@
+@page "/"
+@implements IDisposable
+@inject GameStateService Game
+@inject ClockService Clock
+@inject PresetService Presets
+@inject DeviceService Device
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+
+<PageTitle>@AppInfo.DisplayName</PageTitle>
+
+@if (!_ready)
+{
+    return;
+}
+
+<div class="table-page">
+    @* --- 上の帯 --- *@
+    <MudAppBar Fixed="false" Dense="true" Elevation="0">
+        <MudText Typo="Typo.subtitle1" Class="app-title">@AppInfo.DisplayName</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Undo" Color="Color.Inherit" Disabled="!Game.CanUndo" OnClick="Undo" aria-label="元に戻す" />
+        <MudIconButton Icon="@Icons.Material.Filled.Redo" Color="Color.Inherit" Disabled="!Game.CanRedo" OnClick="Redo" aria-label="やり直す" />
+        <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Inherit" OnClick="OpenLedger" aria-label="精算表" />
+        <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Inherit" OnClick="OpenSettings" aria-label="設定" />
+    </MudAppBar>
+
+    <ClockBar LevelIndex="Clock.LevelIndex(S.Settings)" Level="Clock.Level(S.Settings)" IsLastLevel="Clock.IsLastLevel(S.Settings)"
+              ShowClock="S.Settings.LevelMinutes > 0" Running="Clock.Running" Remaining="Clock.Remaining(S.Settings)"
+              NextHandLevel="@(S.Hand is not null && S.Hand.Blinds != EffectiveLevel(Clock.Level(S.Settings)))"
+              OnToggle="ToggleClock" OnLevelDelta="ChangeLevel" OnMinutesDelta="AddMinutes" />
+
+    @* --- 席 --- *@
+    <div class="table-seats">
+        @if (!S.Seated.Any())
+        {
+            <div class="empty-hint">
+                <MudText Typo="Typo.body1">プレイヤーを追加して始めましょう。</MudText>
+                <MudText Typo="Typo.caption">名前は P1, P2… と自動で付きます。あとから行をタップして変えられます。</MudText>
+            </div>
+        }
+        <PlayerList State="S" OnPlayerClick="OpenPlayer" OnAdd="AddPlayer" />
+    </div>
+
+    @* --- ポット --- *@
+    @if (S.Hand is { } hand)
+    {
+        <div class="pot-bar">
+            <span class="pot-street">@StreetName(hand.Street)</span>
+            <span class="pot-label">Pot</span>
+            <span class="pot-total">@Chips.Format(GameEngine.PotTotal(hand))</span>
+            @if (hand.Street == Street.Showdown && GameEngine.Pots(hand) is { Count: > 1 } pots)
+            {
+                <span class="pot-side">（@string.Join(" / ", pots.Select(p => Chips.Format(p.Amount)))）</span>
+            }
+            <MudSpacer />
+            <span class="pot-hand">#@hand.Number</span>
+        </div>
+    }
+
+    @* --- 操作 --- *@
+    <div class="table-controls">
+        @if (S.Hand is null)
+        {
+            <IdlePanel State="S" NextLevel="EffectiveLevel(Clock.Level(S.Settings))" OnStart="StartHand" />
+        }
+        else if (GameEngine.PendingPot(S.Hand) is { } pending)
+        {
+            <ShowdownPanel State="S" PotIndex="pending.Index" Pot="pending.Pot" OnConfirm="ChooseWinners" />
+        }
+        else if (S.Hand.ToActId is not null)
+        {
+            <ActionPanel State="S" OnAct="Act" OnResized="() => _scrollToActive = true" />
+        }
+    </div>
+</div>
+
+@code {
+    private bool _ready;
+    private Timer? _timer;
+    private bool _ticking;
+    private int? _shownToAct;
+    private bool _scrollToActive;
+
+    private GameState S => Game.State;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(Game.InitializeAsync(), Clock.InitializeAsync(), Presets.InitializeAsync());
+        Game.Changed += OnGameChanged;
+        _timer = new Timer(_ => InvokeAsync(Tick), null, 500, 500);
+        _ready = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) await Device.KeepAwakeAsync();
+        // テンキーを開くと席の一覧が狭くなるので、手番が変わるたびに手番の人を見える位置へ
+        var toAct = S.Hand?.ToActId;
+        if (toAct is not null && (toAct != _shownToAct || _scrollToActive)) await Device.ScrollToActiveAsync();
+        _shownToAct = toAct;
+        _scrollToActive = false;
+    }
+
+    private void OnGameChanged() => InvokeAsync(StateHasChanged);
+
+    // 時計を進め、レベルが上がったら知らせる
+    private async Task Tick()
+    {
+        if (_ticking || S.Settings.LevelMinutes <= 0 || !Clock.Running) return;
+        _ticking = true;
+        try
+        {
+            if (await Clock.TickAsync(S.Settings))
+            {
+                await Device.NotifyLevelUpAsync();
+                var level = Clock.Level(S.Settings);
+                Snackbar.Add($"Lv{Clock.LevelIndex(S.Settings) + 1}（{Chips.Format(EffectiveLevel(level))}）に上がりました"
+                    + (S.Hand is null ? "" : "。次のハンドから"), Severity.Info);
+            }
+            StateHasChanged();
+        }
+        finally
+        {
+            _ticking = false;
+        }
+    }
+
+    // トリプルブラインドを使わない設定なら 3 番目の額は表示しない
+    private BlindLevel EffectiveLevel(BlindLevel level) => S.Settings.TripleBlind ? level : level with { Third = 0 };
+
+    private static string StreetName(Street street) => street switch
+    {
+        Street.Preflop => "プリフロップ",
+        Street.Flop => "フロップ",
+        Street.Turn => "ターン",
+        Street.River => "リバー",
+        _ => "ショーダウン",
+    };
+
+    private async Task Execute(GameCommand command)
+    {
+        var error = await Game.ExecuteAsync(command);
+        if (error is not null) Snackbar.Add(error, Severity.Warning);
+    }
+
+    private Task AddPlayer() => Execute(new AddPlayer(S.Settings.StartingStack));
+
+    private Task Act(Act act) => Execute(act);
+
+    private Task ChooseWinners(ImmutableList<int> ids) => Execute(new ChooseWinners(ids));
+
+    private async Task StartHand()
+    {
+        await Clock.TickAsync(S.Settings);
+        await Execute(new StartHand(Clock.LevelIndex(S.Settings)));
+        if (S.Hand is not null && S.Settings.LevelMinutes > 0) await Clock.StartIfFirstAsync();
+        await Device.KeepAwakeAsync();
+    }
+
+    private Task Undo() => Game.UndoAsync();
+
+    private Task Redo() => Game.RedoAsync();
+
+    private Task ToggleClock() => Clock.ToggleAsync();
+
+    private Task ChangeLevel(int delta) => Clock.SetLevelAsync(S.Settings, Clock.LevelIndex(S.Settings) + delta);
+
+    private Task AddMinutes(int minutes) => Clock.AddMinutesAsync(S.Settings, minutes);
+
+    private async Task OpenPlayer(int id)
+    {
+        var parameters = new DialogParameters<PlayerDialog> { { x => x.State, S }, { x => x.PlayerId, id } };
+        var dialog = await Dialogs.ShowAsync<PlayerDialog>(null, parameters, new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: GameCommand command }) await Execute(command);
+    }
+
+    private async Task OpenLedger()
+    {
+        var parameters = new DialogParameters<LedgerDialog> { { x => x.State, S } };
+        await Dialogs.ShowAsync<LedgerDialog>(null, parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+    }
+
+    private async Task OpenSettings()
+    {
+        var parameters = new DialogParameters<SettingsDialog> { { x => x.Settings, S.Settings } };
+        var dialog = await Dialogs.ShowAsync<SettingsDialog>(null, parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, FullScreen = false, CloseOnEscapeKey = true });
+        var result = await dialog.Result;
+        if (result is not { Canceled: false, Data: SettingsResult r }) return;
+
+        switch (r.Action)
+        {
+            case SettingsAction.Apply when r.Settings is not null && r.Settings != S.Settings:
+                await Execute(new UpdateSettings(r.Settings));
+                break;
+            case SettingsAction.NewGame:
+                await Game.NewGameAsync();
+                await Clock.ResetAsync();
+                Snackbar.Add("新しいゲームにしました", Severity.Success);
+                break;
+            case SettingsAction.Export:
+                await Export();
+                break;
+            case SettingsAction.Import when r.Json is not null:
+                await Import(r.Json);
+                break;
+        }
+    }
+
+    private async Task Export()
+    {
+        var backup = new BackupFile("PokerApp", 1, Game.ToSaved(), Clock.Snapshot, [.. Presets.UserPresets]);
+        var json = System.Text.Json.JsonSerializer.Serialize(backup, AppJsonContext.Default.BackupFile);
+        await Device.DownloadAsync($"pokerapp-{DateTime.Now:yyyyMMdd-HHmm}.json", json);
+    }
+
+    private async Task Import(string json)
+    {
+        try
+        {
+            var backup = System.Text.Json.JsonSerializer.Deserialize(json, AppJsonContext.Default.BackupFile);
+            if (backup is not { App: "PokerApp" }) throw new InvalidDataException("このアプリのバックアップではありません。");
+            await Game.RestoreAsync(backup.Game);
+            await Clock.RestoreAsync(backup.Clock);
+            await Presets.ReplaceUserPresetsAsync(backup.Presets);
+            Snackbar.Add("バックアップから復元しました", Severity.Success);
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add("復元できませんでした: " + e.Message, Severity.Error);
+        }
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+        Game.Changed -= OnGameChanged;
+    }
+}

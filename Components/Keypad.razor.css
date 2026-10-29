@@ -1,0 +1,30 @@
+.keypad {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+}
+
+.keypad-key {
+    height: 44px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.15rem;
+    font-weight: 600;
+    background: var(--mud-palette-action-default-hover);
+    color: var(--mud-palette-text-primary);
+    touch-action: manipulation;
+}
+
+.keypad-key:active {
+    background: var(--mud-palette-action-disabled-background);
+}
+
+.keypad-fn {
+    color: var(--mud-palette-secondary);
+}
+
+.keypad-done {
+    grid-column: span 2;
+    background: var(--mud-palette-primary);
+    color: var(--mud-palette-primary-text);
+}

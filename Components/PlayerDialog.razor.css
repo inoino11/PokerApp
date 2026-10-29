@@ -1,0 +1,23 @@
+.dlg-color {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+}
+
+.dlg-label {
+    font-size: 0.8rem;
+    color: var(--mud-palette-text-secondary);
+}
+
+.dlg-stack {
+    font-size: 1.6rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.dlg-note {
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: var(--mud-palette-warning);
+}

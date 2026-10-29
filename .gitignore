@@ -1,0 +1,7 @@
+bin/
+obj/
+release/
+TestResults/
+.vs/
+*.user
+*private-key*.json

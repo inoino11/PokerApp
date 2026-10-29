@@ -1,0 +1,112 @@
+.player-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px 8px;
+}
+
+.player-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 4px 10px 4px 0;
+    border-radius: 8px;
+    background: var(--mud-palette-surface);
+    border: 2px solid transparent;
+    cursor: pointer;
+    user-select: none;
+}
+
+.player-color {
+    align-self: stretch;
+    width: 6px;
+    border-radius: 8px 0 0 8px;
+}
+
+.player-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.player-name {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.player-badge {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 0 5px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1.5;
+    background: var(--mud-palette-action-default-hover);
+    color: var(--mud-palette-text-secondary);
+}
+
+.badge-d {
+    background: var(--mud-palette-text-primary);
+    color: var(--mud-palette-surface);
+}
+
+.player-state {
+    font-size: 0.75rem;
+    color: var(--mud-palette-text-secondary);
+    min-height: 1em;
+}
+
+.player-bet {
+    min-width: 64px;
+    text-align: right;
+}
+
+.bet-chip {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 12px;
+    background: var(--mud-palette-secondary);
+    color: var(--mud-palette-secondary-text);
+    font-weight: 700;
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.player-stack {
+    min-width: 72px;
+    text-align: right;
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.row-to-act {
+    border-color: var(--mud-palette-primary);
+    background: color-mix(in srgb, var(--mud-palette-primary) 12%, var(--mud-palette-surface));
+}
+
+.row-to-act .player-state {
+    color: var(--mud-palette-primary);
+    font-weight: 700;
+}
+
+.row-folded,
+.row-out {
+    opacity: 0.45;
+}
+
+.player-add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px;
+    border: 1px dashed var(--mud-palette-lines-inputs);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--mud-palette-text-secondary);
+    font-size: 0.9rem;
+}

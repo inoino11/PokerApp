@@ -1,0 +1,50 @@
+.levels {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.level-row {
+    display: grid;
+    grid-template-columns: 24px 1fr 1fr 32px;
+    gap: 6px;
+    align-items: center;
+}
+
+.levels-triple .level-row {
+    grid-template-columns: 24px 1fr 1fr 1fr 32px;
+}
+
+.level-input {
+    width: 100%;
+    min-width: 0;
+    height: 36px;
+    padding: 0 4px;
+    border: 1px solid var(--mud-palette-lines-inputs);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--mud-palette-text-primary);
+    font-size: 0.95rem;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.level-input:focus {
+    outline: 2px solid var(--mud-palette-primary);
+    border-color: transparent;
+}
+
+.level-head {
+    font-size: 0.75rem;
+    color: var(--mud-palette-text-secondary);
+}
+
+.level-no {
+    text-align: center;
+    color: var(--mud-palette-text-secondary);
+}
+
+.file-label {
+    cursor: pointer;
+}

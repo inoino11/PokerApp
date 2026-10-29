@@ -1,0 +1,52 @@
+.showdown-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.showdown-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+.showdown-amount {
+    color: var(--mud-palette-secondary);
+    font-size: 1.25rem;
+    margin: 0 4px;
+}
+
+.showdown-hint {
+    font-size: 0.8rem;
+    color: var(--mud-palette-text-secondary);
+}
+
+.showdown-players {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 6px;
+}
+
+.winner-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 48px;
+    padding: 0 10px 0 0;
+    overflow: hidden;
+    border: 2px solid var(--mud-palette-lines-inputs);
+    border-radius: 8px;
+    background: var(--mud-palette-surface);
+    color: var(--mud-palette-text-primary);
+    font-weight: 600;
+}
+
+.player-color {
+    align-self: stretch;
+    width: 6px;
+}
+
+.winner-on {
+    border-color: var(--mud-palette-primary);
+    background: var(--mud-palette-primary);
+    color: var(--mud-palette-primary-text);
+}

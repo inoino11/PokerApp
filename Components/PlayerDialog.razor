@@ -1,0 +1,105 @@
+@* プレイヤーのメニュー。名前・手元の額・離席・退席・席の移動。結果は 1 つの GameCommand で返す *@
+<MudDialog>
+    <TitleContent>
+        <div class="d-flex align-center gap-2">
+            <span class="dlg-color" style="background:@Chips.PlayerColors[Player.ColorIndex % Chips.PlayerColors.Length]"></span>
+            @Player.Name
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div class="d-flex align-end gap-2">
+            <MudTextField @bind-Value="_name" Label="名前" Variant="Variant.Outlined" Margin="Margin.Dense" MaxLength="12" Class="flex-grow-1" />
+            <MudButton Variant="Variant.Outlined" Disabled="@(string.IsNullOrWhiteSpace(_name) || _name.Trim() == Player.Name)"
+                       OnClick="() => Close(new RenamePlayer(Player.Id, _name))">変更</MudButton>
+        </div>
+
+        <MudDivider Class="my-3" />
+
+        <div class="d-flex align-center justify-space-between">
+            <div>
+                <div class="dlg-label">手元のチップ@(InHand ? "（ポットに出した分を除く）" : "")</div>
+                <div class="dlg-stack">@Chips.Format(_stack)</div>
+            </div>
+            @if (!_editStack)
+            {
+                <MudButton Variant="Variant.Outlined" Disabled="Player.Status == PlayerStatus.Left" OnClick="() => _editStack = true">額を変える</MudButton>
+            }
+        </div>
+        @if (_editStack)
+        {
+            <div class="d-flex gap-1 my-2">
+                @foreach (var add in QuickAdds)
+                {
+                    <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="() => _stack += add">+@Chips.Format(add)</MudButton>
+                }
+            </div>
+            <Keypad @bind-Value="_stack" OnDone="ConfirmStack" />
+            @if (_stack > Player.Stack)
+            {
+                <MudCheckBox @bind-Value="_countAsBuyIn" Label="増えた分をリバイとして精算に計上する" Color="Color.Primary" Dense="true" Class="mt-2" />
+            }
+        }
+
+        <MudDivider Class="my-3" />
+
+        <div class="d-flex flex-wrap gap-2">
+            @if (Player.Status == PlayerStatus.SittingOut)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="Player.Stack <= 0"
+                           OnClick="() => Close(new SetStatus(Player.Id, PlayerStatus.Active))">着席に戻る</MudButton>
+            }
+            else
+            {
+                <MudButton Variant="Variant.Outlined" Disabled="InPot" OnClick="() => Close(new SetStatus(Player.Id, PlayerStatus.SittingOut))">一時離席</MudButton>
+            }
+            <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="InPot"
+                       OnClick="() => Close(new SetStatus(Player.Id, PlayerStatus.Left))">退席する</MudButton>
+            <MudSpacer />
+            <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Variant="Variant.Outlined" aria-label="席を上へ"
+                           OnClick="() => Close(new MovePlayer(Player.Id, -1))" />
+            <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Variant="Variant.Outlined" aria-label="席を下へ"
+                           OnClick="() => Close(new MovePlayer(Player.Id, 1))" />
+        </div>
+        @if (InPot)
+        {
+            <div class="dlg-note">ポットにチップを出しているので、このハンドが終わるまで抜けられません。</div>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">閉じる</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] public IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public GameState State { get; set; } = default!;
+    [Parameter] public int PlayerId { get; set; }
+
+    private string _name = "";
+    private long _stack;
+    private bool _editStack;
+    private bool _countAsBuyIn = true;
+
+    private Player Player => State.GetPlayer(PlayerId);
+    private bool InHand => State.Hand?.Seats.Any(x => x.PlayerId == PlayerId && !x.Folded) == true;
+    private bool InPot => GameEngine.IsInPot(State, PlayerId);
+    private long[] QuickAdds => [State.Settings.StartingStack / 2, State.Settings.StartingStack];
+
+    protected override void OnInitialized()
+    {
+        _name = Player.Name;
+        _stack = Player.Stack;
+    }
+
+    private void ConfirmStack()
+    {
+        if (_stack == Player.Stack)
+        {
+            _editStack = false;
+            return;
+        }
+        Close(new SetStack(Player.Id, _stack, _countAsBuyIn && _stack > Player.Stack));
+    }
+
+    private void Close(GameCommand command) => MudDialog.Close(DialogResult.Ok(command));
+}

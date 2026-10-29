@@ -1,0 +1,32 @@
+@* ハンドとハンドの間。前のハンドの結果と、次のハンドを始めるボタン *@
+<div class="idle-panel">
+    @if (State.LastResult is { } result)
+    {
+        <div class="result-title">ハンド #@result.HandNumber の結果</div>
+        <div class="result-list">
+            @foreach (var r in result.Players.Where(r => r.Net != 0).OrderByDescending(r => r.Net))
+            {
+                <span class="result-item @(r.Net > 0 ? "result-plus" : "result-minus")">
+                    @State.GetPlayer(r.PlayerId).Name @(r.Net > 0 ? "+" : "")@Chips.Format(r.Net)
+                </span>
+            }
+        </div>
+    }
+
+    @if (EligibleCount < 2)
+    {
+        <div class="idle-hint">ハンドを始めるには、チップを持って着席している人が 2 人以上必要です。</div>
+    }
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large" Disabled="EligibleCount < 2"
+               StartIcon="@Icons.Material.Filled.PlayArrow" OnClick="OnStart" Class="start-btn">
+        @(State.HandCount == 0 ? "最初のハンドを始める" : "次のハンドへ")（@Chips.Format(NextLevel)）
+    </MudButton>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public GameState State { get; set; } = default!;
+    [Parameter, EditorRequired] public BlindLevel NextLevel { get; set; } = default!;
+    [Parameter] public EventCallback OnStart { get; set; }
+
+    private int EligibleCount => GameEngine.Eligible(State).Count();
+}

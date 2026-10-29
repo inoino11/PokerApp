@@ -1,0 +1,49 @@
+@* ブラインドのレベルと時計。タップするとレベルと残り時間を手で変えるメニューを開く *@
+<div class="clock-bar">
+    <MudMenu AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft" Class="clock-menu">
+        <ActivatorContent>
+            <div class="clock-level" @onclick="e => context.ToggleAsync(e)">
+                <span class="clock-lv">Lv@(LevelIndex + 1)</span>
+                <span class="clock-blinds">@Chips.Format(Level)</span>
+                @if (NextHandLevel)
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Warning" Class="ml-1">次のハンドから</MudChip>
+                }
+            </div>
+        </ActivatorContent>
+        <ChildContent>
+            <MudMenuItem Icon="@Icons.Material.Filled.KeyboardArrowUp" OnClick="() => OnLevelDelta.InvokeAsync(1)" Disabled="IsLastLevel">レベルを上げる</MudMenuItem>
+            <MudMenuItem Icon="@Icons.Material.Filled.KeyboardArrowDown" OnClick="() => OnLevelDelta.InvokeAsync(-1)" Disabled="LevelIndex == 0">レベルを下げる</MudMenuItem>
+            @if (ShowClock)
+            {
+                <MudMenuItem Icon="@Icons.Material.Filled.Add" OnClick="() => OnMinutesDelta.InvokeAsync(1)">残り時間 +1 分</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.Remove" OnClick="() => OnMinutesDelta.InvokeAsync(-1)">残り時間 −1 分</MudMenuItem>
+            }
+        </ChildContent>
+    </MudMenu>
+
+    <MudSpacer />
+
+    @if (ShowClock)
+    {
+        <span class="clock-time @(Running ? "" : "clock-paused")">
+            @(IsLastLevel ? "最終レベル" : $"{(int)Remaining.TotalMinutes:00}:{Remaining.Seconds:00}")
+        </span>
+        <MudIconButton Icon="@(Running ? Icons.Material.Filled.Pause : Icons.Material.Filled.PlayArrow)"
+                       Color="@(Running ? Color.Default : Color.Primary)" Variant="@(Running ? Variant.Text : Variant.Filled)"
+                       Size="Size.Medium" OnClick="OnToggle" aria-label="@(Running ? "一時停止" : "再開")" />
+    }
+</div>
+
+@code {
+    [Parameter] public int LevelIndex { get; set; }
+    [Parameter, EditorRequired] public BlindLevel Level { get; set; } = default!;
+    [Parameter] public bool IsLastLevel { get; set; }
+    [Parameter] public bool ShowClock { get; set; }
+    [Parameter] public bool Running { get; set; }
+    [Parameter] public TimeSpan Remaining { get; set; }
+    [Parameter] public bool NextHandLevel { get; set; }  // 進行中のハンドとレベルが違う
+    [Parameter] public EventCallback OnToggle { get; set; }
+    [Parameter] public EventCallback<int> OnLevelDelta { get; set; }
+    [Parameter] public EventCallback<int> OnMinutesDelta { get; set; }
+}

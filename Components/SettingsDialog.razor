@@ -1,0 +1,204 @@
+@* 設定。ブラインド・プリセット・チップ単位・バックアップ・新しいゲーム *@
+@inject PresetService Presets
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>設定</TitleContent>
+    <DialogContent>
+        @* --- プリセット --- *@
+        <MudText Typo="Typo.subtitle2" Class="mb-1">プリセット</MudText>
+        <div class="d-flex gap-2 align-end">
+            <MudSelect T="string" @bind-Value="_presetName" Label="プリセットを選ぶ" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1">
+                @foreach (var p in Presets.All)
+                {
+                    <MudSelectItem Value="@p.Name">@p.Name</MudSelectItem>
+                }
+            </MudSelect>
+            <MudButton Variant="Variant.Outlined" Disabled="@(SelectedPreset is null)" OnClick="LoadPreset" Style="white-space:nowrap">読み込む</MudButton>
+        </div>
+        <div class="d-flex gap-2 align-end mt-2">
+            <MudTextField @bind-Value="_saveName" Label="プリセット名" Placeholder="今の内容を保存" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+            <MudButton Variant="Variant.Outlined" Disabled="string.IsNullOrWhiteSpace(_saveName)" OnClick="SavePreset">保存</MudButton>
+        </div>
+        @if (SelectedPreset is { Builtin: false } user)
+        {
+            <MudButton Size="Size.Small" Color="Color.Error" Class="mt-1" StartIcon="@Icons.Material.Filled.Delete" OnClick="() => DeletePreset(user)">
+                「@user.Name」を削除
+            </MudButton>
+        }
+
+        <MudDivider Class="my-3" />
+
+        @* --- ブラインド --- *@
+        <MudText Typo="Typo.subtitle2" Class="mb-1">ブラインド</MudText>
+        <div class="d-flex gap-2">
+            <MudNumericField @bind-Value="_minutes" Label="時間（分）" HelperText="0 なら固定" Min="0" Max="600" Variant="Variant.Outlined" Margin="Margin.Dense" />
+            <MudNumericField @bind-Value="_startingStack" Label="初期スタック" Min="0" Step="1000" Variant="Variant.Outlined" Margin="Margin.Dense" />
+        </div>
+        <MudSwitch @bind-Value="_triple" Label="トリプルブラインド（4 人以上のとき）" Color="Color.Primary" Class="mt-1" />
+
+        <div class="levels @(_triple ? "levels-triple" : "")">
+            <div class="level-row level-head">
+                <span>Lv</span><span>SB</span><span>BB</span>
+                @if (_triple) { <span>3rd</span> }
+                <span></span>
+            </div>
+            @for (var i = 0; i < _levels.Count; i++)
+            {
+                var idx = i;
+                <div class="level-row">
+                    <span class="level-no">@(idx + 1)</span>
+                    <input class="level-input" type="number" inputmode="numeric" min="0" value="@_levels[idx].Sb"
+                           @onchange="e => _levels[idx] = _levels[idx] with { Sb = ParseChips(e) }" aria-label="Lv@(idx + 1) SB" />
+                    <input class="level-input" type="number" inputmode="numeric" min="1" value="@_levels[idx].Bb"
+                           @onchange="e => _levels[idx] = _levels[idx] with { Bb = ParseChips(e) }" aria-label="Lv@(idx + 1) BB" />
+                    @if (_triple)
+                    {
+                        <input class="level-input" type="number" inputmode="numeric" min="0" value="@_levels[idx].Third"
+                               @onchange="e => _levels[idx] = _levels[idx] with { Third = ParseChips(e) }" aria-label="Lv@(idx + 1) 3rd" />
+                    }
+                    <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Disabled="_levels.Count <= 1" OnClick="() => _levels.RemoveAt(idx)" aria-label="この行を消す" />
+                </div>
+            }
+        </div>
+        <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="AddLevel">レベルを足す</MudButton>
+
+        <MudDivider Class="my-3" />
+
+        @* --- チップの単位 --- *@
+        <MudText Typo="Typo.subtitle2" Class="mb-1">チップの単位</MudText>
+        <MudSwitch @bind-Value="_roundBets" Label="ポットの % で出した額とチョップを単位で丸める" Color="Color.Primary" />
+        <div class="d-flex gap-2 align-center">
+            <MudSwitch @bind-Value="_autoUnit" Label="単位は今のレベルの SB" Color="Color.Primary" Disabled="!_roundBets" />
+            @if (!_autoUnit)
+            {
+                <MudNumericField @bind-Value="_unit" Label="単位" Min="1" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="!_roundBets" Style="max-width:120px" />
+            }
+        </div>
+
+        <MudDivider Class="my-3" />
+
+        @* --- データ --- *@
+        <MudText Typo="Typo.subtitle2" Class="mb-1">データ</MudText>
+        <div class="d-flex flex-wrap gap-2">
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Download" OnClick="() => Close(SettingsAction.Export)">バックアップを保存</MudButton>
+            <label class="mud-button-root mud-button mud-button-outlined mud-button-outlined-default mud-button-outlined-size-medium mud-ripple file-label">
+                <MudIcon Icon="@Icons.Material.Filled.Upload" Size="Size.Small" Class="mr-2" />バックアップから復元
+                <InputFile OnChange="Import" accept=".json,application/json" hidden />
+            </label>
+            <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.RestartAlt" OnClick="NewGame">新しいゲーム</MudButton>
+        </div>
+
+        <MudText Typo="Typo.caption" Class="d-block mt-4">@Notices.NoGambling</MudText>
+        <MudText Typo="Typo.caption" Class="d-block">@AppInfo.DisplayName @AppInfo.Version</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">キャンセル</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Apply">適用</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] public IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public GameSettings Settings { get; set; } = default!;
+
+    private List<BlindLevel> _levels = [];
+    private int _minutes;
+    private long _startingStack;
+    private bool _triple;
+    private bool _roundBets;
+    private bool _autoUnit;
+    private long _unit;
+    private string? _presetName;
+    private string _saveName = "";
+
+    private BlindPreset? SelectedPreset => Presets.All.FirstOrDefault(p => p.Name == _presetName);
+
+    protected override void OnInitialized() => Load(Settings);
+
+    private void Load(GameSettings s)
+    {
+        _levels = [.. s.Levels];
+        _minutes = s.LevelMinutes;
+        _startingStack = s.StartingStack;
+        _triple = s.TripleBlind;
+        _roundBets = s.RoundBets;
+        _autoUnit = s.ChipUnit is null;
+        _unit = s.ChipUnit ?? s.Levels[0].Sb;
+    }
+
+    private GameSettings Build() => new(
+        [.. _levels], _minutes, _triple, _startingStack, _autoUnit ? null : Math.Max(1, _unit), _roundBets);
+
+    private static long ParseChips(ChangeEventArgs e) => long.TryParse(e.Value?.ToString(), out var v) ? Math.Max(0, v) : 0;
+
+    private void AddLevel()
+    {
+        var last = _levels.Count > 0 ? _levels[^1] : new BlindLevel(50, 100);
+        _levels.Add(new BlindLevel(last.Sb * 2, last.Bb * 2, last.Third * 2));
+    }
+
+    private void LoadPreset()
+    {
+        if (SelectedPreset is { } p) Load(p.ApplyTo(Build()));
+    }
+
+    private async Task SavePreset()
+    {
+        var error = await Presets.SaveAsync(BlindPreset.From(_saveName, Build()));
+        if (error is not null)
+        {
+            Snackbar.Add(error, Severity.Warning);
+            return;
+        }
+        Snackbar.Add($"「{_saveName.Trim()}」を保存しました", Severity.Success);
+        _presetName = _saveName.Trim();
+        _saveName = "";
+    }
+
+    private async Task DeletePreset(BlindPreset preset)
+    {
+        var ok = await Dialogs.ShowMessageBoxAsync("プリセットの削除", $"「{preset.Name}」を削除しますか？", yesText: "削除", cancelText: "やめる");
+        if (ok != true) return;
+        await Presets.DeleteAsync(preset.Name);
+        _presetName = null;
+    }
+
+    private async Task NewGame()
+    {
+        var ok = await Dialogs.ShowMessageBoxAsync("新しいゲーム",
+            "プレイヤーと履歴を消して、新しいゲームを始めますか？（設定とプリセットは残ります。元に戻せません）",
+            yesText: "新しいゲーム", cancelText: "やめる");
+        if (ok == true) Close(SettingsAction.NewGame);
+    }
+
+    private async Task Import(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            using var reader = new StreamReader(e.File.OpenReadStream(5_000_000));
+            var json = await reader.ReadToEndAsync();
+            var ok = await Dialogs.ShowMessageBoxAsync("バックアップから復元",
+                "今のゲームとプリセットを、ファイルの内容に置き換えますか？", yesText: "復元", cancelText: "やめる");
+            if (ok == true) MudDialog.Close(DialogResult.Ok(new SettingsResult(SettingsAction.Import, null, json)));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("ファイルを読めませんでした: " + ex.Message, Severity.Error);
+        }
+    }
+
+    private void Apply()
+    {
+        if (_levels.Any(l => l.Bb <= 0 || l.Sb < 0 || l.Third < 0))
+        {
+            Snackbar.Add("BB は 1 以上、SB と 3rd は 0 以上にしてください。", Severity.Warning);
+            return;
+        }
+        if (_levels.Count == 0) return;
+        MudDialog.Close(DialogResult.Ok(new SettingsResult(SettingsAction.Apply, Build(), null)));
+    }
+
+    private void Close(SettingsAction action) => MudDialog.Close(DialogResult.Ok(new SettingsResult(action, null, null)));
+}

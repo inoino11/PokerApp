@@ -1,0 +1,47 @@
+@* ショーダウンで 1 つのポットの勝者を選ぶ。複数選べばチョップ *@
+<div class="showdown-panel">
+    <div class="showdown-title">
+        @(PotIndex == 0 ? "メインポット" : $"サイドポット {PotIndex}")
+        <span class="showdown-amount">@Chips.Format(Pot.Amount)</span>
+        の勝者
+    </div>
+    <div class="showdown-hint">勝った人をタップ（引き分けなら複数）</div>
+    <div class="showdown-players">
+        @foreach (var p in State.Players.Where(p => Pot.EligibleIds.Contains(p.Id)))
+        {
+            var id = p.Id;
+            <button type="button" class="winner-btn @(_selected.Contains(id) ? "winner-on" : "")" @onclick="() => Toggle(id)">
+                <span class="player-color" style="background:@Chips.PlayerColors[p.ColorIndex % Chips.PlayerColors.Length]"></span>
+                @p.Name
+            </button>
+        }
+    </div>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large" Disabled="_selected.Count == 0"
+               OnClick="Confirm">
+        @(_selected.Count > 1 ? $"{_selected.Count} 人でチョップ" : "勝者に決定")
+    </MudButton>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public GameState State { get; set; } = default!;
+    [Parameter] public int PotIndex { get; set; }
+    [Parameter, EditorRequired] public Pot Pot { get; set; } = default!;
+    [Parameter] public EventCallback<ImmutableList<int>> OnConfirm { get; set; }
+
+    private readonly HashSet<int> _selected = [];
+    private int _lastPot = -1;
+
+    protected override void OnParametersSet()
+    {
+        if (_lastPot == PotIndex) return;
+        _lastPot = PotIndex;
+        _selected.Clear();
+    }
+
+    private void Toggle(int id)
+    {
+        if (!_selected.Remove(id)) _selected.Add(id);
+    }
+
+    private Task Confirm() => OnConfirm.InvokeAsync(Pot.EligibleIds.Where(_selected.Contains).ToImmutableList());
+}

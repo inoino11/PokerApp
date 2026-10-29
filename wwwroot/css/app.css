@@ -1,0 +1,120 @@
+html, body {
+    margin: 0;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background: var(--mud-palette-background);
+}
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+}
+
+/* --- 精算表 --- */
+.ledger .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.ledger .plus {
+    color: var(--mud-palette-success);
+    font-weight: 700;
+}
+
+.ledger .minus {
+    color: var(--mud-palette-error);
+    font-weight: 700;
+}
+
+.ledger .ledger-left td {
+    color: var(--mud-palette-text-secondary);
+}
+
+.ledger tfoot td {
+    font-weight: 700;
+}
+
+.ledger th,
+.ledger td {
+    white-space: nowrap;
+}
+
+/* --- エラー表示 --- */
+.error-panel {
+    padding: 32px 16px;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+/* --- 起動中の表示 --- */
+#app-loading {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    background: #1b6e3c;
+    color: #fff;
+    font-family: system-ui, sans-serif;
+    z-index: 9999;
+    transition: opacity 0.35s;
+}
+
+#app-loading.done {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.app-loading-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+
+.app-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: app-spin 0.9s linear infinite;
+}
+
+@keyframes app-spin {
+    to { transform: rotate(360deg); }
+}
+
+#app-loading-error {
+    text-align: center;
+}
+
+#app-loading-error button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 0.6rem 1.25rem 0.7rem;
+    background: lightyellow;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+    cursor: pointer;
+}

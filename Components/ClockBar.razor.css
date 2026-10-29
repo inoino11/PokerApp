@@ -1,0 +1,41 @@
+.clock-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    min-height: 52px;
+    background: var(--mud-palette-surface);
+    border-bottom: 1px solid var(--mud-palette-lines-default);
+}
+
+.clock-level {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.clock-lv {
+    font-size: 0.85rem;
+    color: var(--mud-palette-text-secondary);
+}
+
+.clock-blinds {
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+.clock-time {
+    font-size: 1.6rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.clock-paused {
+    color: var(--mud-palette-text-disabled);
+    animation: blink 1.2s steps(2) infinite;
+}
+
+@keyframes blink {
+    50% { opacity: 0.4; }
+}

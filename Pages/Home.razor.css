@@ -1,0 +1,71 @@
+/* 画面の高さいっぱいに並べ、席の一覧だけをスクロールさせる */
+.table-page {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.table-page ::deep .app-title {
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.table-seats {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.empty-hint {
+    padding: 24px 16px 8px;
+    text-align: center;
+}
+
+.pot-bar {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--mud-palette-surface);
+    border-top: 1px solid var(--mud-palette-lines-default);
+}
+
+.pot-street {
+    font-size: 0.8rem;
+    padding: 1px 8px;
+    border-radius: 10px;
+    background: var(--mud-palette-primary);
+    color: var(--mud-palette-primary-text);
+}
+
+.pot-label {
+    font-size: 0.8rem;
+    color: var(--mud-palette-text-secondary);
+}
+
+.pot-total {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--mud-palette-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+.pot-side {
+    font-size: 0.8rem;
+    color: var(--mud-palette-text-secondary);
+}
+
+.pot-hand {
+    font-size: 0.75rem;
+    color: var(--mud-palette-text-secondary);
+}
+
+.table-controls {
+    padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
+    background: var(--mud-palette-background-gray);
+    border-top: 1px solid var(--mud-palette-lines-default);
+}

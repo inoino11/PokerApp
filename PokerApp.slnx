@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/tests/">
+    <Project Path="tests/PokerApp.E2E/PokerApp.E2E.csproj" />
+    <Project Path="tests/PokerApp.Tests/PokerApp.Tests.csproj" />
+  </Folder>
+  <Project Path="PokerApp.csproj" />
+</Solution>
