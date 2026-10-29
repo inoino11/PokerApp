@@ -67,3 +67,10 @@
     background: var(--mud-palette-background-gray);
     border-top: 1px solid var(--mud-palette-lines-default);
 }
+
+/* 幅の狭い端末では、帯のアイコンの余白を詰めてアプリ名を残す */
+@media (max-width: 360px) {
+    .table-page ::deep .mud-appbar .mud-icon-button {
+        padding: 8px;
+    }
+}

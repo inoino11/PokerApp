@@ -360,4 +360,47 @@ public class GameEngineTests
         Assert.Equal(2, g.Hand.ButtonId);
         Assert.Equal([1, 3], g.Hand.BlindIds);
     }
+
+    // --- 始め直す ---
+
+    [Fact]
+    public void 同じメンバーで始め直すと_退席者を除いて全員が初期スタックに戻り_Dは先頭()
+    {
+        var g = new TestGame(10000, 10000, 10000, 10000).Do(new RenamePlayer(1, "あ")).Do(new SeatPlayer(3, 0))
+            .Start().Fold().Fold().Fold();
+        g.Do(new SetStack(2, 0, false)).Do(new SetStack(1, 3000, false)).Do(new SetStatus(4, PlayerStatus.Left)).Do(new ChooseButton(1));
+        Assert.Equal(PlayerStatus.SittingOut, g.State.GetPlayer(2).Status);
+        Assert.NotNull(g.State.LastResult);
+
+        g.Do(new RestartGame(KeepPlayers: true));
+        Assert.Equal([3, 1, 2], g.State.Players.Select(p => p.Id));
+        Assert.All(g.State.Players, p => Assert.Equal((10000L, PlayerStatus.Active, 10000L), (p.Stack, p.Status, p.BuyIn)));
+        Assert.Equal("あ", g.State.GetPlayer(1).Name);
+        Assert.Null(g.State.LastResult);
+        Assert.Equal(0, g.State.HandCount);
+        Assert.Equal(3, GameEngine.NextButtonId(g.State));
+
+        // 新しく足した人の番号は続きから
+        g.Do(new AddPlayer(10000));
+        Assert.Equal("P5", g.State.Players[^1].Name);
+    }
+
+    [Fact]
+    public void ハンドの途中でも始め直せる()
+    {
+        var g = new TestGame(10000, 10000, 10000).Start().Raise(500);
+        g.Do(new RestartGame(KeepPlayers: true));
+        Assert.Null(g.State.Hand);
+        Assert.All(g.State.Players, p => Assert.Equal(10000, p.Stack));
+    }
+
+    [Fact]
+    public void 全部消して始めるとプレイヤーも消えて設定は残る()
+    {
+        var g = new TestGame(new BlindLevel(100, 200), false, 10000, 10000).Do(new RestartGame(KeepPlayers: false));
+        Assert.Empty(g.State.Players);
+        Assert.Equal(200, g.State.Settings.Levels[0].Bb);
+        g.Do(new AddPlayer(10000));
+        Assert.Equal("P1", g.State.Players[0].Name);
+    }
 }

@@ -91,15 +91,6 @@ public sealed class GameStateService(ILocalStorageService storage)
         await SaveAsync();
     }
 
-    /// <summary>
-    /// 新しいゲームにする。プレイヤーと履歴は消し、設定は引き継ぐ。
-    /// </summary>
-    public async Task NewGameAsync()
-    {
-        Load(new SavedGame(FormatVersion, GameEngine.NewGame(State.Settings), [], []));
-        await SaveAsync();
-    }
-
     public SavedGame ToSaved() => new(FormatVersion, _base, [.. _commands], [.. _redo]);
 
     /// <summary>

@@ -21,6 +21,7 @@
         <MudSpacer />
         <MudIconButton Icon="@Icons.Material.Filled.Undo" Color="Color.Inherit" Disabled="!Game.CanUndo" OnClick="Undo" aria-label="元に戻す" />
         <MudIconButton Icon="@Icons.Material.Filled.Redo" Color="Color.Inherit" Disabled="!Game.CanRedo" OnClick="Redo" aria-label="やり直す" />
+        <MudIconButton Icon="@Icons.Material.Filled.RestartAlt" Color="Color.Inherit" OnClick="OpenRestart" aria-label="始め直す" />
         <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Inherit" OnClick="OpenSettings" aria-label="設定" />
     </MudAppBar>
 
@@ -222,19 +223,20 @@
         var dialog = await Dialogs.ShowAsync<SettingsDialog>(null, parameters,
             new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, FullScreen = false, CloseOnEscapeKey = true });
         var result = await dialog.Result;
-        if (result is not { Canceled: false, Data: SettingsResult r }) return;
+        if (result is { Canceled: false, Data: GameSettings settings } && settings != S.Settings) await Execute(new UpdateSettings(settings));
+    }
 
-        switch (r.Action)
-        {
-            case SettingsAction.Apply when r.Settings is not null && r.Settings != S.Settings:
-                await Execute(new UpdateSettings(r.Settings));
-                break;
-            case SettingsAction.NewGame:
-                await Game.NewGameAsync();
-                await Clock.ResetAsync();
-                Snackbar.Add("新しいゲームにしました", Severity.Success);
-                break;
-        }
+    // 始め直したら時計も Lv1 に戻して止める（時計は UNDO の対象外なので、UNDO しても戻らない）
+    private async Task OpenRestart()
+    {
+        var parameters = new DialogParameters<RestartDialog> { { x => x.StartingStack, S.Settings.StartingStack } };
+        var dialog = await Dialogs.ShowAsync<RestartDialog>(null, parameters, new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is not { Canceled: false, Data: RestartGame command }) return;
+        _seatMode = false;
+        await Execute(command);
+        await Clock.ResetAsync();
+        Snackbar.Add(command.KeepPlayers ? "同じメンバーで始め直しました" : "全部消して始め直しました", Severity.Success);
     }
 
     public async ValueTask DisposeAsync()

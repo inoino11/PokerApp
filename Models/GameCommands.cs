@@ -20,6 +20,7 @@ namespace PokerApp.Models;
 [JsonDerivedType(typeof(UpdateSettings), "settings")]
 [JsonDerivedType(typeof(EditPlayer), "edit")]
 [JsonDerivedType(typeof(ChooseButton), "button")]
+[JsonDerivedType(typeof(RestartGame), "restart")]
 public abstract record GameCommand;
 
 public sealed record AddPlayer(long Stack) : GameCommand;
@@ -40,6 +41,12 @@ public sealed record EditPlayer(int PlayerId, string Name, long Stack) : GameCom
 /// 次のハンドのボタンを手で選ぶ（ハンドの合間だけ）。その次のハンドからは、選んだ人を起点に自動で回る。
 /// </summary>
 public sealed record ChooseButton(int PlayerId) : GameCommand;
+
+/// <summary>
+/// ゲームを始め直す。KeepPlayers なら席にいる人（退席した人を除く）を残して全員を初期スタックに戻し、そうでなければプレイヤーも消す。
+/// 設定は引き継ぐ。履歴は残すので UNDO で戻せる。
+/// </summary>
+public sealed record RestartGame(bool KeepPlayers) : GameCommand;
 
 public sealed record SetStatus(int PlayerId, PlayerStatus Status) : GameCommand;
 

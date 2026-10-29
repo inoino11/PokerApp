@@ -1,0 +1,32 @@
+@* 始め直す。同じメンバーで初期スタックに戻すか、プレイヤーも消すかを選ぶ。結果は RestartGame で返す。
+   どちらも UNDO で戻せるので、選ぶこと自体を確認の代わりにする *@
+<MudDialog>
+    <TitleContent>始め直す</TitleContent>
+    <DialogContent>
+        <div class="d-flex flex-column gap-3">
+            <div>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                           OnClick="() => Close(true)">同じメンバーで始め直す</MudButton>
+                <MudText Typo="Typo.caption" Class="d-block mt-1">名前と席はそのまま、全員を @Chips.Format(StartingStack) に戻します。</MudText>
+            </div>
+            <div>
+                <MudButton Variant="Variant.Outlined" Color="Color.Error" FullWidth="true"
+                           OnClick="() => Close(false)">全部消して始める</MudButton>
+                <MudText Typo="Typo.caption" Class="d-block mt-1">プレイヤーも消します。設定とプリセットは残ります。</MudText>
+            </div>
+            <MudText Typo="Typo.caption" Class="d-block">
+                どちらも上の「元に戻す」で戻せます（時計は Lv1 に戻ったままです）。ゲームの状態はこの端末にだけ一時的に保存されます。
+            </MudText>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">やめる</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] public IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public long StartingStack { get; set; }
+
+    private void Close(bool keepPlayers) => MudDialog.Close(DialogResult.Ok(new RestartGame(keepPlayers)));
+}

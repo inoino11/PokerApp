@@ -226,4 +226,40 @@ public class TableTests(AppFixture app)
             await context.CloseAsync();
         }
     }
+
+    [Fact]
+    public async Task 同じメンバーで始め直し_元に戻せる()
+    {
+        var (context, page) = await app.OpenAsync();
+        try
+        {
+            await AddPlayers(page, 2);
+            await page.GetByText("最初のハンドを始める").ClickAsync();
+            await page.GetByRole(AriaRole.Button, new() { Name = "All-in", Exact = true }).ClickAsync();
+            await page.GetByRole(AriaRole.Button, new() { Name = "Call", Exact = false }).ClickAsync();
+            await page.Locator(".winner-btn", new() { HasTextString = "P1" }).ClickAsync();
+            await page.GetByRole(AriaRole.Button, new() { Name = "勝者に決定" }).ClickAsync();
+            var stacks = page.Locator(".player-stack");
+            await Assertions.Expect(stacks.Nth(1)).ToHaveTextAsync("0");
+
+            await page.GetByLabel("始め直す").ClickAsync();
+            await page.GetByRole(AriaRole.Button, new() { Name = "同じメンバーで始め直す" }).ClickAsync();
+            await Assertions.Expect(stacks.First).ToHaveTextAsync("10,000");
+            await Assertions.Expect(stacks.Nth(1)).ToHaveTextAsync("10,000");
+            await Assertions.Expect(page.GetByText("最初のハンドを始める")).ToBeVisibleAsync();
+
+            await page.GetByLabel("元に戻す").ClickAsync();
+            await Assertions.Expect(stacks.Nth(1)).ToHaveTextAsync("0");
+
+            await page.GetByLabel("始め直す").ClickAsync();
+            await page.GetByRole(AriaRole.Button, new() { Name = "全部消して始める" }).ClickAsync();
+            await Assertions.Expect(page.Locator(".player-row")).ToHaveCountAsync(0);
+            await page.GetByLabel("元に戻す").ClickAsync();
+            await Assertions.Expect(page.Locator(".player-row")).ToHaveCountAsync(2);
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
 }

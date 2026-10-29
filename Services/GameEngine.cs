@@ -24,6 +24,7 @@ public static class GameEngine
         MovePlayer c => Seat(s, c.PlayerId, s.Seated.ToList().FindIndex(p => p.Id == c.PlayerId) + Math.Sign(c.Direction)),
         SeatPlayer c => s.Hand is null ? Seat(s, c.PlayerId, c.ToIndex) : throw new InvalidOperationException("席替えはハンドの合間にできます。"),
         ChooseButton c => ChooseButton(s, c),
+        RestartGame c => Restart(s, c),
         StartHand c => StartHand(s, c),
         Act c => Act(s, c),
         ChooseWinners c => ChooseWinners(s, c),
@@ -206,6 +207,18 @@ public static class GameEngine
         if (s.Hand is not null) throw new InvalidOperationException("D はハンドの合間に変えられます。");
         if (!Eligible(s).Any(p => p.Id == c.PlayerId)) throw new InvalidOperationException("次のハンドに参加できる人だけ D にできます。");
         return s with { ChosenButtonId = c.PlayerId };
+    }
+
+    // 途中のハンドは捨てる。次の D は最初のゲームと同じく先頭の人
+    static GameState Restart(GameState s, RestartGame c)
+    {
+        if (!c.KeepPlayers) return NewGame(s.Settings);
+        var stack = s.Settings.StartingStack;
+        var players = s.Players
+            .Where(p => p.Status != PlayerStatus.Left)
+            .Select(p => p with { Stack = stack, BuyIn = stack, Status = stack > 0 ? PlayerStatus.Active : PlayerStatus.SittingOut })
+            .ToImmutableList();
+        return NewGame(s.Settings) with { Players = players, NextPlayerId = s.NextPlayerId };
     }
 
     // --- ハンドの開始 ---

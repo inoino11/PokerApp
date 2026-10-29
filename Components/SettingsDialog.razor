@@ -1,4 +1,4 @@
-@* 設定。ブラインド・プリセット・チップ単位・新しいゲーム *@
+@* 設定。ブラインド・プリセット・チップ単位。結果は GameSettings で返す *@
 @inject PresetService Presets
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
@@ -79,12 +79,7 @@
 
         <MudDivider Class="my-3" />
 
-        @* --- ゲーム --- *@
-        <MudText Typo="Typo.subtitle2" Class="mb-1">ゲーム</MudText>
-        <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.RestartAlt" OnClick="NewGame">新しいゲーム</MudButton>
-        <MudText Typo="Typo.caption" Class="d-block mt-1">ゲームの状態はこの端末にだけ一時的に保存されます。一戦が終わったら「新しいゲーム」で消してください。</MudText>
-
-        <MudText Typo="Typo.caption" Class="d-block mt-4">@Notices.NoGambling</MudText>
+        <MudText Typo="Typo.caption" Class="d-block">@Notices.NoGambling</MudText>
         <MudText Typo="Typo.caption" Class="d-block">@AppInfo.DisplayName @AppInfo.Version</MudText>
     </DialogContent>
     <DialogActions>
@@ -160,14 +155,6 @@
         _presetName = null;
     }
 
-    private async Task NewGame()
-    {
-        var ok = await Dialogs.ShowMessageBoxAsync("新しいゲーム",
-            "プレイヤーと履歴を消して、新しいゲームを始めますか？（設定とプリセットは残ります。元に戻せません）",
-            yesText: "新しいゲーム", cancelText: "やめる");
-        if (ok == true) Close(SettingsAction.NewGame);
-    }
-
     private void Apply()
     {
         if (_levels.Any(l => l.Bb <= 0 || l.Sb < 0 || l.Third < 0))
@@ -176,8 +163,6 @@
             return;
         }
         if (_levels.Count == 0) return;
-        MudDialog.Close(DialogResult.Ok(new SettingsResult(SettingsAction.Apply, Build())));
+        MudDialog.Close(DialogResult.Ok(Build()));
     }
-
-    private void Close(SettingsAction action) => MudDialog.Close(DialogResult.Ok(new SettingsResult(action, null)));
 }
