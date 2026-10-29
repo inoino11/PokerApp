@@ -18,6 +18,7 @@ public static class GameEngine
         AddPlayer c => AddPlayer(s, c),
         RenamePlayer c => Rename(s, c),
         SetStack c => SetStack(s, c),
+        EditPlayer c => Edit(s, c),
         SetStatus c => SetStatus(s, c),
         // MovePlayer は旧版の履歴を読むためだけに残しているので、ハンド中の制限はかけない
         MovePlayer c => Seat(s, c.PlayerId, s.Seated.ToList().FindIndex(p => p.Id == c.PlayerId) + Math.Sign(c.Direction)),
@@ -118,6 +119,13 @@ public static class GameEngine
         var name = c.Name.Trim();
         if (name.Length == 0) throw new InvalidOperationException("名前が空です。");
         return UpdatePlayer(s, c.PlayerId, p => p with { Name = name });
+    }
+
+    static GameState Edit(GameState s, EditPlayer c)
+    {
+        var player = s.GetPlayer(c.PlayerId);
+        if (c.Name.Trim() != player.Name) s = Rename(s, new RenamePlayer(c.PlayerId, c.Name));
+        return c.Stack == player.Stack ? s : SetStack(s, new SetStack(c.PlayerId, c.Stack, CountAsBuyIn: true));
     }
 
     static GameState SetStack(GameState s, SetStack c)

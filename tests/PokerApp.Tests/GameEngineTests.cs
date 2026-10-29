@@ -299,4 +299,19 @@ public class GameEngineTests
         Assert.Equal([4, 2, 1, 3], g.State.Players.Select(p => p.Id));
         Assert.Equal([4, 1, 3], g.State.Seated.Select(p => p.Id));
     }
+
+    [Fact]
+    public void 名前と手元はまとめて変えられ_増えた分はリバイとして記録する()
+    {
+        var g = new TestGame(10000, 10000);
+        g.Do(new EditPlayer(1, " Alice ", 15000));
+        var p = g.State.GetPlayer(1);
+        Assert.Equal("Alice", p.Name);
+        Assert.Equal(15000, p.Stack);
+        Assert.Equal(15000, p.BuyIn);
+
+        g.Do(new EditPlayer(1, "Alice", 12000));
+        Assert.Equal(12000, g.State.GetPlayer(1).Stack);
+        Assert.Equal(15000, g.State.GetPlayer(1).BuyIn);
+    }
 }

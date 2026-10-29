@@ -80,7 +80,7 @@ public class TableTests(AppFixture app)
             await stack.FillAsync("１，０００");
             await stack.PressAsync("Tab");
             await Assertions.Expect(stack).ToHaveValueAsync("1,000");
-            await page.GetByRole(AriaRole.Button, new() { Name = "変更" }).Nth(1).ClickAsync();
+            await page.GetByRole(AriaRole.Button, new() { Name = "確定" }).ClickAsync();
             await Assertions.Expect(page.Locator(".player-stack").First).ToHaveTextAsync("1,000");
 
             await page.GetByText("最初のハンドを始める").ClickAsync();

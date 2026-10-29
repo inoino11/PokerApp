@@ -38,7 +38,7 @@
 
 .player-badge {
     display: inline-block;
-    margin-left: 4px;
+    margin-right: 4px;
     padding: 0 5px;
     border-radius: 4px;
     font-size: 0.7rem;
@@ -60,9 +60,12 @@
 }
 
 .player-state {
+    display: flex;
+    align-items: center;
     font-size: 0.75rem;
     color: var(--mud-palette-text-secondary);
-    min-height: 1em;
+    min-height: 1.2rem;
+    white-space: nowrap;
 }
 
 .player-bet {

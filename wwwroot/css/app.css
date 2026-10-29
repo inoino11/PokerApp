@@ -24,35 +24,6 @@ button {
     transition: opacity 0.2s;
 }
 
-/* --- 精算表 --- */
-.ledger .num {
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-}
-
-.ledger .plus {
-    color: var(--mud-palette-success);
-    font-weight: 700;
-}
-
-.ledger .minus {
-    color: var(--mud-palette-error);
-    font-weight: 700;
-}
-
-.ledger .ledger-left td {
-    color: var(--mud-palette-text-secondary);
-}
-
-.ledger tfoot td {
-    font-weight: 700;
-}
-
-.ledger th,
-.ledger td {
-    white-space: nowrap;
-}
-
 /* --- エラー表示 --- */
 .error-panel {
     padding: 32px 16px;

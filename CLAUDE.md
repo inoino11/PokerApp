@@ -45,8 +45,8 @@
 dotnet watch run            # 開発サーバー（http://localhost:5xxx）
 dotnet build                # ビルド確認。変更後は必ずここまで通す
 dotnet test tests/PokerApp.Tests      # ロジックのテスト
-dotnet publish -c Release -o release   # 本番ビルド（CI と同じ）
-E2E_WWWROOT=release/wwwroot E2E_BROWSER_CHANNEL=msedge dotnet test tests/PokerApp.E2E   # 公開物の画面テスト
+dotnet publish PokerApp.csproj -c Release -o release   # 本番ビルド（CI と同じ。slnx があるので csproj を指定する）
+E2E_WWWROOT="$PWD/release/wwwroot" E2E_BROWSER_CHANNEL=msedge dotnet test tests/PokerApp.E2E   # 公開物の画面テスト
 ```
 
 - この PC（Windows）で Node が要るときは、VS Code 同梱のものを `ELECTRON_RUN_AS_NODE=1 "$LOCALAPPDATA/Programs/Microsoft VS Code/Code.exe"` で使う。
@@ -179,7 +179,7 @@ PokerApp/
 ## ビルド・デプロイ
 
 - `main` への push で GitHub Actions（`.github/workflows/deploy.yml`）が GitHub Pages にデプロイする。手動デプロイはしない。
-- ワークフローの流れ: `setup-dotnet` → ロジックのテスト → `dotnet publish -c Release -o release` → 公開物の画面テスト（Playwright の Chromium）→ `.nojekyll` 作成と `index.html` を `404.html` にコピー（SPA の直リンク対策）→ `upload-pages-artifact` → `deploy-pages`。テストが落ちたら公開しない。
+- ワークフローの流れ: `setup-dotnet` → ロジックのテスト → `dotnet publish PokerApp.csproj -c Release -o release` → 公開物の画面テスト（Playwright の Chromium）→ `.nojekyll` 作成と `index.html` を `404.html` にコピー（SPA の直リンク対策）→ `upload-pages-artifact` → `deploy-pages`。テストが落ちたら公開しない。
 - 画面テストが失敗したら、操作の動画を成果物として上げる（`E2E_ARTIFACTS`）。
 - 運用の見張り（KV の書き込み回数や問い合わせの新着）が要るなら、GitHub Actions の定期実行で調べ、知らせることがあるときだけ「運用通知」の Issue に書く（GitHub からメールが届く）。
 

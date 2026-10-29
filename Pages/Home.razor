@@ -21,7 +21,6 @@
         <MudSpacer />
         <MudIconButton Icon="@Icons.Material.Filled.Undo" Color="Color.Inherit" Disabled="!Game.CanUndo" OnClick="Undo" aria-label="元に戻す" />
         <MudIconButton Icon="@Icons.Material.Filled.Redo" Color="Color.Inherit" Disabled="!Game.CanRedo" OnClick="Redo" aria-label="やり直す" />
-        <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Inherit" OnClick="OpenLedger" aria-label="精算表" />
         <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Inherit" OnClick="OpenSettings" aria-label="設定" />
     </MudAppBar>
 
@@ -217,12 +216,6 @@
         var dialog = await Dialogs.ShowAsync<PlayerDialog>(null, parameters, new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, FullWidth = true });
         var result = await dialog.Result;
         if (result is { Canceled: false, Data: GameCommand command }) await Execute(command);
-    }
-
-    private async Task OpenLedger()
-    {
-        var parameters = new DialogParameters<LedgerDialog> { { x => x.State, S } };
-        await Dialogs.ShowAsync<LedgerDialog>(null, parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
     }
 
     private async Task OpenSettings()

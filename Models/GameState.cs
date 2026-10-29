@@ -11,7 +11,7 @@ public enum ActionKind { Fold, Check, Call, Raise, AllIn }
 
 /// <summary>
 /// プレイヤー。Stack はハンドに出していない手元の額（behind）。
-/// 退席した人も精算表のためにリストに残す。
+/// 退席した人もリストに残す（次のボタンの位置を、前のボタンの人の並びの位置から決めるため）。BuyIn は今は画面に出さないが、精算に使えるよう記録だけしておく。
 /// </summary>
 public sealed record Player(int Id, string Name, int ColorIndex, long Stack, PlayerStatus Status, long BuyIn);
 

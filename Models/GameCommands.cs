@@ -18,6 +18,7 @@ namespace PokerApp.Models;
 [JsonDerivedType(typeof(Act), "act")]
 [JsonDerivedType(typeof(ChooseWinners), "winners")]
 [JsonDerivedType(typeof(UpdateSettings), "settings")]
+[JsonDerivedType(typeof(EditPlayer), "edit")]
 public abstract record GameCommand;
 
 public sealed record AddPlayer(long Stack) : GameCommand;
@@ -25,9 +26,14 @@ public sealed record AddPlayer(long Stack) : GameCommand;
 public sealed record RenamePlayer(int PlayerId, string Name) : GameCommand;
 
 /// <summary>
-/// 手元の額を変える。CountAsBuyIn なら増えた分をリバイとして精算に計上する。
+/// 手元の額を変える。CountAsBuyIn なら増えた分をリバイとして BuyIn に足す。
 /// </summary>
 public sealed record SetStack(int PlayerId, long Stack, bool CountAsBuyIn) : GameCommand;
+
+/// <summary>
+/// プレイヤーの画面の「確定」。名前と手元の額をまとめて変え、UNDO の 1 手にする。増えた分はリバイとして記録する。
+/// </summary>
+public sealed record EditPlayer(int PlayerId, string Name, long Stack) : GameCommand;
 
 public sealed record SetStatus(int PlayerId, PlayerStatus Status) : GameCommand;
 

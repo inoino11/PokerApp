@@ -8,14 +8,15 @@
         <div @key="p.Id" class="player-row @RowClass(p, seat, toAct)" @onclick="() => RowClicked(p.Id)">
             <span class="player-color" style="background:@Chips.PlayerColors[p.ColorIndex % Chips.PlayerColors.Length]"></span>
             <div class="player-main">
-                <div class="player-name">
-                    @p.Name
+                <div class="player-name">@p.Name</div>
+                @* 札は名前の後ろに付けると名前の長さで位置がずれるので、2 行目の左端にそろえる *@
+                <div class="player-state">
                     @foreach (var badge in Badges(p.Id))
                     {
                         <span class="player-badge @(badge switch { "D" => "badge-d", "次D" => "badge-next", _ => "" })">@badge</span>
                     }
+                    @StateText(p, seat)
                 </div>
-                <div class="player-state">@StateText(p, seat)</div>
             </div>
             <div class="player-bet">
                 @if (seat is { StreetBet: > 0 })

@@ -1,4 +1,4 @@
-@* プレイヤーのメニュー。名前・手元の額・離席・退席。結果は 1 つの GameCommand で返す *@
+@* プレイヤーのメニュー。名前と手元の額は「確定」でまとめて変え、離席・退席はボタンですぐ変える。結果は 1 つの GameCommand で返す *@
 <MudDialog>
     <TitleContent>
         <div class="d-flex align-center gap-2">
@@ -7,21 +7,12 @@
         </div>
     </TitleContent>
     <DialogContent>
-        <div class="d-flex align-end gap-2">
-            <MudTextField @bind-Value="_name" Label="名前" Variant="Variant.Outlined" Margin="Margin.Dense" MaxLength="12" Class="flex-grow-1" />
-            <MudButton Variant="Variant.Outlined" Disabled="@(string.IsNullOrWhiteSpace(_name) || _name.Trim() == Player.Name)"
-                       OnClick="() => Close(new RenamePlayer(Player.Id, _name))">変更</MudButton>
-        </div>
-
-        <MudDivider Class="my-3" />
+        <MudTextField @bind-Value="_name" Label="名前" Variant="Variant.Outlined" Margin="Margin.Dense" MaxLength="12" />
 
         @* 数値として読めない内容で確定したら、直前に読めた値へ戻す *@
-        <div class="d-flex align-end gap-2">
-            <MudTextField @ref="_stackField" T="string" Value="_stackText" ValueChanged="OnStackTextChanged" Label="@($"手元のチップ{(InHand ? "（ポットに出した分を除く）" : "")}")"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" InputMode="InputMode.numeric" Class="flex-grow-1 dlg-stack-input"
-                          Disabled="Player.Status == PlayerStatus.Left" />
-            <MudButton Variant="Variant.Outlined" Disabled="_stack == Player.Stack" OnClick="ConfirmStack">変更</MudButton>
-        </div>
+        <MudTextField @ref="_stackField" T="string" Value="_stackText" ValueChanged="OnStackTextChanged" Label="手元のチップ"
+                      Variant="Variant.Outlined" Margin="Margin.Dense" InputMode="InputMode.numeric" Class="mt-3 dlg-stack-input"
+                      Disabled="Player.Status == PlayerStatus.Left" />
         @if (Player.Status != PlayerStatus.Left)
         {
             <div class="d-flex gap-1 mt-2">
@@ -30,10 +21,6 @@
                     <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="() => SetStack(_stack + add)">+@Chips.Format(add)</MudButton>
                 }
             </div>
-        }
-        @if (_stack > Player.Stack)
-        {
-            <MudCheckBox @bind-Value="_countAsBuyIn" Label="増えた分をリバイとして精算に計上する" Color="Color.Primary" Dense="true" Class="mt-1" />
         }
 
         <MudDivider Class="my-3" />
@@ -58,6 +45,8 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="() => MudDialog.Cancel()">閉じる</MudButton>
+        @* 入力欄の内容は欄を離れたときに伝わるので、押せない状態にはしない（入力中に押しても受け付ける） *@
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Confirm">確定</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -70,10 +59,8 @@
     private long _stack;
     private string _stackText = "";
     private MudTextField<string>? _stackField;
-    private bool _countAsBuyIn = true;
 
     private Player Player => State.GetPlayer(PlayerId);
-    private bool InHand => State.Hand?.Seats.Any(x => x.PlayerId == PlayerId && !x.Folded) == true;
     private bool InPot => GameEngine.IsInPot(State, PlayerId);
     private long[] QuickAdds => [State.Settings.StartingStack / 2, State.Settings.StartingStack];
 
@@ -96,7 +83,13 @@
         if (_stackField is not null) await _stackField.SetTextAsync(_stackText);
     }
 
-    private void ConfirmStack() => Close(new SetStack(Player.Id, _stack, _countAsBuyIn && _stack > Player.Stack));
+    // 名前を空にしたときは元の名前のまま。何も変えていなければ履歴に積まずに閉じる
+    private void Confirm()
+    {
+        var name = string.IsNullOrWhiteSpace(_name) ? Player.Name : _name.Trim();
+        if (name == Player.Name && _stack == Player.Stack) MudDialog.Cancel();
+        else Close(new EditPlayer(Player.Id, name, _stack));
+    }
 
     private void Close(GameCommand command) => MudDialog.Close(DialogResult.Ok(command));
 }
