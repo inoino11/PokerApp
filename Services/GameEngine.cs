@@ -19,8 +19,9 @@ public static class GameEngine
         RenamePlayer c => Rename(s, c),
         SetStack c => SetStack(s, c),
         SetStatus c => SetStatus(s, c),
+        // MovePlayer は旧版の履歴を読むためだけに残しているので、ハンド中の制限はかけない
         MovePlayer c => Seat(s, c.PlayerId, s.Seated.ToList().FindIndex(p => p.Id == c.PlayerId) + Math.Sign(c.Direction)),
-        SeatPlayer c => Seat(s, c.PlayerId, c.ToIndex),
+        SeatPlayer c => s.Hand is null ? Seat(s, c.PlayerId, c.ToIndex) : throw new InvalidOperationException("席替えはハンドの合間にできます。"),
         StartHand c => StartHand(s, c),
         Act c => Act(s, c),
         ChooseWinners c => ChooseWinners(s, c),
@@ -86,6 +87,19 @@ public static class GameEngine
 
     public static IEnumerable<Player> Eligible(GameState s) =>
         s.Players.Where(p => p.Status == PlayerStatus.Active && p.Stack > 0);
+
+    /// <summary>
+    /// 次のハンドのボタン。前のボタンの人の次の席へ移る。前のボタンの人が抜けていても、その人の席の位置から数える。
+    /// 席替えで前のボタンの人を動かすと、ボタンもその人について動く。参加できる人が 2 人未満なら null。
+    /// </summary>
+    public static int? NextButtonId(GameState s)
+    {
+        var eligible = Eligible(s).ToList();
+        if (eligible.Count < 2) return null;
+        if (s.LastButtonId is not int last || s.Players.FindIndex(p => p.Id == last) is not (var lastPos and >= 0))
+            return eligible[0].Id;
+        return (eligible.FirstOrDefault(p => s.Players.IndexOf(p) > lastPos) ?? eligible[0]).Id;
+    }
 
     // --- プレイヤー ---
 
@@ -177,14 +191,9 @@ public static class GameEngine
     {
         if (s.Hand is not null) throw new InvalidOperationException("ハンドの途中です。");
         var eligible = Eligible(s).ToList();
-        if (eligible.Count < 2) throw new InvalidOperationException("参加できる人が 2 人以上必要です。");
-
-        // ボタンは前のボタンの次の席へ。前のボタンの人が抜けていても、その人の席の位置から数える
-        var button = eligible[0];
-        if (s.LastButtonId is int last && s.Players.FindIndex(p => p.Id == last) is var lastPos and >= 0)
-            button = eligible.FirstOrDefault(p => s.Players.IndexOf(p) > lastPos) ?? eligible[0];
-
-        var bi = eligible.IndexOf(button);
+        var buttonId = NextButtonId(s) ?? throw new InvalidOperationException("参加できる人が 2 人以上必要です。");
+        var bi = eligible.FindIndex(p => p.Id == buttonId);
+        var button = eligible[bi];
         var order = eligible.Skip(bi + 1).Concat(eligible.Take(bi + 1)).ToList();
         var n = order.Count;
 

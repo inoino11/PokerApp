@@ -12,7 +12,7 @@
                     @p.Name
                     @foreach (var badge in Badges(p.Id))
                     {
-                        <span class="player-badge @(badge == "D" ? "badge-d" : "")">@badge</span>
+                        <span class="player-badge @(badge switch { "D" => "badge-d", "次D" => "badge-next", _ => "" })">@badge</span>
                     }
                 </div>
                 <div class="player-state">@StateText(p, seat)</div>
@@ -50,7 +50,8 @@
             }
             @if (State.Seated.Count() >= 2)
             {
-                <button type="button" class="list-btn seat-toggle" @onclick="() => SeatModeChanged.InvokeAsync(true)">
+                @* ハンドの途中は押せても入らない（理由は親が知らせる） *@
+                <button type="button" class="list-btn seat-toggle @(Hand is null ? "" : "seat-locked")" @onclick="() => SeatModeChanged.InvokeAsync(true)">
                     <MudIcon Icon="@Icons.Material.Filled.SwapVert" Size="Size.Small" />
                     席替え
                 </button>
@@ -72,7 +73,12 @@
 
     private IEnumerable<string> Badges(int id)
     {
-        if (Hand is null) yield break;
+        // ハンドの合間は次のボタンを見せる（席替えでボタンが誰に移るかを確かめられるように）
+        if (Hand is null)
+        {
+            if (GameEngine.NextButtonId(State) == id) yield return "次D";
+            yield break;
+        }
         if (Hand.ButtonId == id) yield return "D";
         string[] names = ["SB", "BB", "3rd"];
         for (var i = 0; i < Hand.BlindIds.Count; i++)

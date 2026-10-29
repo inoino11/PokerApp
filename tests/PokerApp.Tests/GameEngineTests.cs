@@ -266,6 +266,32 @@ public class GameEngineTests
     }
 
     [Fact]
+    public void ハンドの途中は席替えできない()
+    {
+        var g = new TestGame(10000, 10000, 10000).Start();
+        Assert.Throws<InvalidOperationException>(() => g.Do(new SeatPlayer(3, 0)));
+        g.Fold().Fold();
+        g.Do(new SeatPlayer(3, 0));
+        Assert.Equal([3, 1, 2], g.State.Players.Select(p => p.Id));
+    }
+
+    [Fact]
+    public void 次のボタンは前のボタンの人の次で_席替えするとその人について動く()
+    {
+        var g = new TestGame(10000, 10000, 10000, 10000).Start().Fold().Fold().Fold();
+        Assert.Equal(2, GameEngine.NextButtonId(g.State));
+        // 前のボタン P1 を最後の席へ。次のボタンは P1 の次＝先頭の P2 のまま
+        g.Do(new SeatPlayer(1, 3));
+        Assert.Equal(2, GameEngine.NextButtonId(g.State));
+        // P1 を 2 番目へ動かすと、そのすぐ後ろの P3 が次のボタン
+        g.Do(new SeatPlayer(1, 1));
+        Assert.Equal([2, 1, 3, 4], g.State.Players.Select(p => p.Id));
+        Assert.Equal(3, GameEngine.NextButtonId(g.State));
+        g.Start();
+        Assert.Equal(3, g.Hand.ButtonId);
+    }
+
+    [Fact]
     public void 席替えでは退席した人の位置は動かさない()
     {
         var g = new TestGame(1, 1, 1, 1).Do(new SetStatus(2, PlayerStatus.Left)).Do(new SeatPlayer(4, 0));

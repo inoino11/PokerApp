@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.Playwright;
 
 namespace PokerApp.E2E;
@@ -115,13 +116,45 @@ public class TableTests(AppFixture app)
             await page.Mouse.UpAsync();
 
             var names = page.Locator(".player-name");
-            await Assertions.Expect(names.First).ToHaveTextAsync("P4");
-            await Assertions.Expect(names.Nth(1)).ToHaveTextAsync("P1");
+            await Assertions.Expect(names.First).ToHaveTextAsync(new Regex(@"^P4(?!\d)"));
+            await Assertions.Expect(names.Nth(1)).ToHaveTextAsync(new Regex(@"^P1(?!\d)"));
 
             await page.GetByRole(AriaRole.Button, new() { Name = "完了" }).ClickAsync();
             await page.GetByLabel("元に戻す").ClickAsync();
-            await Assertions.Expect(names.First).ToHaveTextAsync("P1");
-            await Assertions.Expect(names.Nth(3)).ToHaveTextAsync("P4");
+            await Assertions.Expect(names.First).ToHaveTextAsync(new Regex(@"^P1(?!\d)"));
+            await Assertions.Expect(names.Nth(3)).ToHaveTextAsync(new Regex(@"^P4(?!\d)"));
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task ハンドの途中は席替えに入れず_合間なら次のボタンが見える()
+    {
+        var (context, page) = await app.OpenAsync();
+        try
+        {
+            await AddPlayers(page, 3);
+            await Assertions.Expect(page.Locator(".badge-next")).ToHaveCountAsync(1);
+            await Assertions.Expect(page.Locator(".player-row").First.Locator(".badge-next")).ToBeVisibleAsync();
+
+            await page.GetByText("最初のハンドを始める").ClickAsync();
+            await page.GetByRole(AriaRole.Button, new() { Name = "席替え" }).ClickAsync();
+            await Assertions.Expect(page.GetByText("席替えはハンドの合間にできます。")).ToBeVisibleAsync();
+            await Assertions.Expect(page.Locator(".seat-handle")).ToHaveCountAsync(0);
+
+            await page.GetByRole(AriaRole.Button, new() { Name = "Fold", Exact = true }).ClickAsync();
+            await page.GetByRole(AriaRole.Button, new() { Name = "Fold", Exact = true }).ClickAsync();
+            // 次のボタンは P2
+            await Assertions.Expect(page.Locator(".player-row").Nth(1).Locator(".badge-next")).ToBeVisibleAsync();
+            await page.GetByRole(AriaRole.Button, new() { Name = "席替え" }).ClickAsync();
+            await Assertions.Expect(page.Locator(".seat-handle")).ToHaveCountAsync(3);
+
+            // 席替え中に UNDO でハンドの途中へ戻ったら、席替えモードを抜ける
+            await page.GetByLabel("元に戻す").ClickAsync();
+            await Assertions.Expect(page.Locator(".seat-handle")).ToHaveCountAsync(0);
         }
         finally
         {

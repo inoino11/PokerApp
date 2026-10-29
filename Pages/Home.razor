@@ -39,7 +39,7 @@
                 <MudText Typo="Typo.caption">名前は P1, P2… と自動で付きます。あとから行をタップして変えられます。</MudText>
             </div>
         }
-        <PlayerList State="S" OnPlayerClick="OpenPlayer" OnAdd="AddPlayer" @bind-SeatMode="_seatMode" />
+        <PlayerList State="S" OnPlayerClick="OpenPlayer" OnAdd="AddPlayer" SeatMode="_seatMode" SeatModeChanged="SetSeatMode" />
     </div>
 
     @* --- ポット（席替え中は一覧を広く使うため、ポットと操作を隠す） --- *@
@@ -109,7 +109,23 @@
         _scrollToActive = false;
     }
 
-    private void OnGameChanged() => InvokeAsync(StateHasChanged);
+    private void OnGameChanged()
+    {
+        // UNDO などでハンドの途中に戻ったら席替えモードを抜ける
+        if (S.Hand is not null) _seatMode = false;
+        InvokeAsync(StateHasChanged);
+    }
+
+    // 席替えはハンドの合間だけ。ハンドの途中に並びを変えると、一覧の並びと手番の順がずれて見えるため
+    private void SetSeatMode(bool on)
+    {
+        if (on && S.Hand is not null)
+        {
+            Snackbar.Add("席替えはハンドの合間にできます。", Severity.Info);
+            return;
+        }
+        _seatMode = on;
+    }
 
     // 時計を進め、レベルが上がったら知らせる
     private async Task Tick()
