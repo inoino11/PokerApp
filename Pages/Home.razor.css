@@ -7,6 +7,12 @@
     margin: 0 auto;
 }
 
+/* 画面を端まで使う設定（viewport-fit=cover）なので、iPhone では時計や電池の帯の下まで広がる。
+   帯の色はそこまで伸ばし、中身は帯の下から始める */
+.table-page ::deep .mud-appbar {
+    padding-top: env(safe-area-inset-top);
+}
+
 .app-logo {
     flex: none;
     width: 30px;
