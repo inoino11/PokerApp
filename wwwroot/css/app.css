@@ -52,23 +52,69 @@ button {
     pointer-events: none;
 }
 
-.app-loading-title {
-    font-size: 1.5rem;
+/* チップを親指ではじいたように、跳ねながら縦に一回転させ、着地したら少し休む */
+.app-loading-chip {
+    width: 96px;
+    height: 96px;
+    animation: app-chip-flip 1.8s ease-in-out infinite;
+}
+
+.app-loading-chip svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+@keyframes app-chip-flip {
+    0%, 15% { transform: translateY(0) rotateX(0); }
+    45% { transform: translateY(-40px) rotateX(180deg); }
+    75%, 100% { transform: translateY(0) rotateX(360deg); }
+}
+
+/* 足もとの影。チップが高いほど小さく薄くする */
+.app-loading-shadow {
+    width: 72px;
+    height: 10px;
+    margin-top: -12px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.25);
+    animation: app-chip-shadow 1.8s ease-in-out infinite;
+}
+
+@keyframes app-chip-shadow {
+    0%, 15% { transform: scale(1); opacity: 1; }
+    45% { transform: scale(0.55); opacity: 0.5; }
+    75%, 100% { transform: scale(1); opacity: 1; }
+}
+
+.app-loading-text {
+    font-size: 1.1rem;
     font-weight: 700;
     letter-spacing: 0.1em;
+    animation: app-text-pulse 1.5s ease-in-out infinite;
 }
 
-.app-loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid rgba(255, 255, 255, 0.3);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: app-spin 0.9s linear infinite;
+@keyframes app-text-pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
 }
 
-@keyframes app-spin {
-    to { transform: rotate(360deg); }
+/* 起動に失敗したら動きを止め、復旧ボタンだけを見せる */
+#app-loading.failed .app-loading-chip,
+#app-loading.failed .app-loading-shadow {
+    animation: none;
+}
+
+#app-loading.failed .app-loading-text {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .app-loading-chip,
+    .app-loading-shadow,
+    .app-loading-text {
+        animation: none;
+    }
 }
 
 #app-loading-error {

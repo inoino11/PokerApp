@@ -7,6 +7,7 @@ window.appLoading = {
         setTimeout(() => el.remove(), 400);
     },
     fail() {
+        document.getElementById('app-loading')?.classList.add('failed');
         document.getElementById('app-loading-error')?.removeAttribute('hidden');
     },
     // Service Worker とキャッシュを消して読み直す（古いファイルが残って起動できないときの逃げ道）
