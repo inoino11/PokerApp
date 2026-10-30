@@ -1,25 +1,21 @@
 # CLAUDE.md
 
-`PokerApp`（表示名「ポーカーチップ」）は、テキサスホールデムのチップのやり取りを 1 台の端末でデジタル化する Blazor WebAssembly 製のクライアント完結型 PWA。サーバーを持たず、データは端末内（localStorage / IndexedDB）に保存し、GitHub Pages から独自ドメインの `https://{subdomain}.inoino11.com/` で静的配信する。
+`PokerApp`（表示名「シマリス - ポーカーチップ管理 -」、英字では CHIPmunk）は、テキサスホールデムのチップのやり取りを 1 台の端末でデジタル化する Blazor WebAssembly 製のクライアント完結型 PWA。サーバーを持たず、データは端末内（localStorage / IndexedDB）に保存し、GitHub Pages から独自ドメインの `https://chipmunk.inoino11.com/` で静的配信する。
 
 ## 仕様
 
 - 仕様は [docs/spec.md](docs/spec.md) にまとめてある。仕様を変えたら、そちらも直す。
-- 表示名（今は「ポーカーチップ」）は `Services/AppInfo.cs` の定数と、`wwwroot/index.html` の `<title>`、`wwwroot/manifest.json` の `name` / `short_name` の 3 か所にある。変えるときはそろえる。
+- 名前は `Services/AppInfo.cs` の定数（上の帯とタブ）、`wwwroot/index.html`（`<title>`・起動画面・OGP）、`wwwroot/manifest.json` の `name` / `short_name`（ホーム画面に入れたときの名前「ポーカー シマリス」）にある。変えるときはそろえる。
+- アイコンの元の絵は `docs/icon/`、共有用の画像は `wwwroot/ogp-image.jpg`。
 
-## 未了の準備（サブドメインが決まったら行う）
+## 公開の準備（ユーザーの操作待ち。公開できたらこの節を消す）
 
-サブドメイン `{subdomain}` はまだ決まっていない。決まるまでは `dotnet watch run` で確認できる範囲で進める。
-決まったら次を行い、この節を消す。
+コード側の準備（`deploy.yml`・OGP）は済んでいる。残りはユーザーにお願いする画面での操作:
 
-1. このファイルの `{subdomain}` を埋める。
-2. `.github/workflows/deploy.yml` を作る（下の「ビルド・デプロイ」）。
-3. OGP（`og:url` / `og:image`）を `index.html` に足す。
-4. ユーザーにお願いする（画面での操作。手順を詳しく案内する）:
-   1. GitHub で空のリポジトリ `PokerApp` を作る（無料プランで Pages を使うなら Public）。この PC には `gh` コマンドがないため。作ったら Claude が `git remote add` して、許可を得て push する。
-   2. リポジトリの Settings → Pages → Source を **GitHub Actions** にする。
-   3. Cloudflare の `inoino11.com` → DNS → Records に、`CNAME {subdomain} → inoino11.github.io` を **DNS only（灰色の雲）** で足す。
-   4. Settings → Pages → Custom domain に `{subdomain}.inoino11.com` を入れて保存し、DNS の確認が通ったら **Enforce HTTPS** をオンにする。
+1. GitHub で空のリポジトリ `PokerApp` を作る（無料プランで Pages を使うなら Public）。この PC には `gh` コマンドがないため。作ったら Claude が `git remote add` して、許可を得て push する。
+2. リポジトリの Settings → Pages → Source を **GitHub Actions** にする。
+3. Cloudflare の `inoino11.com` → DNS → Records に、`CNAME chipmunk → inoino11.github.io` を **DNS only（灰色の雲）** で足す。
+4. Settings → Pages → Custom domain に `chipmunk.inoino11.com` を入れて保存し、DNS の確認が通ったら **Enforce HTTPS** をオンにする。
 
 公開前に localhost で遊んだデータは、公開版には引き継がれない（オリジンが違う）。公開後に住所を変えないこと。
 
@@ -138,15 +134,15 @@ PokerApp/
 
 ## 公開先とドメイン
 
-- アプリは `https://{subdomain}.inoino11.com/` のルートで配信する。`<base href="/" />` に固定し、ローカルと本番で切り替えない。CI で書き換えない。
+- アプリは `https://chipmunk.inoino11.com/` のルートで配信する。`<base href="/" />` に固定し、ローカルと本番で切り替えない。CI で書き換えない。
 - パスはすべて相対パスで書く（先頭 `/` を付けない）。
-- OGP の `og:url` / `og:image` は `https://{subdomain}.inoino11.com/` からの絶対 URL で書く。
+- OGP の `og:url` / `og:image` は `https://chipmunk.inoino11.com/` からの絶対 URL で書く。
 - ブラウザはサイトの住所（オリジン）ごとにデータを分けて保存する。公開後に住所を変えると、利用者が保存したプリセットが引き継がれない（バックアップの仕組みはないので、移す手段もない）。住所は変えない。
 - 共有するのが前提の URL では、鍵などの秘密は `#` 以降に置く（サーバーやログに送られない）。
 
 ## Cloudflare Workers（サーバー側の処理が要る場合のみ）
 
-- Worker の住所は `{subdomain}-api.inoino11.com` にする（`api.inoino11.com` は TaGAMΣ の Worker が使っている）。`wrangler.toml` に `routes = [{ pattern = "{subdomain}-api.inoino11.com", custom_domain = true }]` を書けば、DNS と証明書は Cloudflare が用意する。
+- Worker の住所は `chipmunk-api.inoino11.com` にする（`api.inoino11.com` は TaGAMΣ の Worker が使っている）。`wrangler.toml` に `routes = [{ pattern = "chipmunk-api.inoino11.com", custom_domain = true }]` を書けば、DNS と証明書は Cloudflare が用意する。
 - 設定は `wrangler.toml` に集め、ダッシュボードで直接変えない（次のデプロイで上書きされる）。
 - デプロイは `cloudflare/**` を変えた push で GitHub Actions（`cloudflare/wrangler-action`）が行う。Worker のテストが通ったときだけデプロイする。
 - 無料枠（KV の書き込みは 1 日 1,000 回、UTC 0 時 = 日本時間 9 時に戻る）を意識し、書き込み回数を抑える作りにする（送信の間引き、最短間隔）。上限に達したら Worker は 429 を返し、アプリは「日本時間 9 時に回復します」と表示する。

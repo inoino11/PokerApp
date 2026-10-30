@@ -1,0 +1,72 @@
+# main への push で、テストが通ったときだけ GitHub Pages（https://chipmunk.inoino11.com/）へ公開する
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 公開が重なったら、あとの push を優先する
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: ロジックのテスト
+        run: dotnet test tests/PokerApp.Tests
+
+      - name: 本番ビルド
+        run: dotnet publish PokerApp.csproj -c Release -o release
+
+      - name: 画面テストの準備（Chromium を入れる）
+        run: |
+          dotnet build tests/PokerApp.E2E
+          pwsh tests/PokerApp.E2E/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
+
+      - name: 画面テスト
+        run: dotnet test tests/PokerApp.E2E --no-build
+        env:
+          E2E_WWWROOT: ${{ github.workspace }}/release/wwwroot
+          E2E_ARTIFACTS: ${{ github.workspace }}/e2e-artifacts
+
+      - name: 画面テストの動画を上げる（失敗したときだけ）
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-artifacts
+          path: e2e-artifacts
+          if-no-files-found: ignore
+
+      # .nojekyll: _framework などの _ で始まるフォルダーを配信させる。404.html: 直リンクでもアプリを開く
+      - name: Pages 用に整える
+        run: |
+          touch release/wwwroot/.nojekyll
+          cp release/wwwroot/index.html release/wwwroot/404.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: release/wwwroot
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
