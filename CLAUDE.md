@@ -8,17 +8,6 @@
 - 名前は `Services/AppInfo.cs` の定数（上の帯とタブ）、`wwwroot/index.html`（`<title>`・起動画面・OGP）、`wwwroot/manifest.json` の `name` / `short_name`（ホーム画面に入れたときの名前「ポーカー シマリス」）にある。変えるときはそろえる。
 - アイコンの元の絵は `docs/icon/`、共有用の画像は `wwwroot/ogp-image.jpg`。
 
-## 公開の準備（ユーザーの操作待ち。公開できたらこの節を消す）
-
-コード側の準備（`deploy.yml`・OGP）は済んでいる。残りはユーザーにお願いする画面での操作:
-
-1. GitHub で空のリポジトリ `PokerApp` を作る（無料プランで Pages を使うなら Public）。この PC には `gh` コマンドがないため。作ったら Claude が `git remote add` して、許可を得て push する。
-2. リポジトリの Settings → Pages → Source を **GitHub Actions** にする。
-3. Cloudflare の `inoino11.com` → DNS → Records に、`CNAME chipmunk → inoino11.github.io` を **DNS only（灰色の雲）** で足す。
-4. Settings → Pages → Custom domain に `chipmunk.inoino11.com` を入れて保存し、DNS の確認が通ったら **Enforce HTTPS** をオンにする。
-
-公開前に localhost で遊んだデータは、公開版には引き継がれない（オリジンが違う）。公開後に住所を変えないこと。
-
 ## 技術スタック
 
 | 用途 | 採用 |
