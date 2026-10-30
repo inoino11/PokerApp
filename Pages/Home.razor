@@ -7,7 +7,7 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 
-<PageTitle>@AppInfo.DisplayName</PageTitle>
+<PageTitle>@AppInfo.PageTitle</PageTitle>
 
 @if (!_ready)
 {
@@ -17,7 +17,7 @@
 <div class="table-page">
     @* --- 上の帯 --- *@
     <MudAppBar Fixed="false" Dense="true" Elevation="0">
-        <MudText Typo="Typo.subtitle1" Class="app-title">@AppInfo.DisplayName</MudText>
+        <MudText Typo="Typo.subtitle1" Class="app-title">@AppInfo.DisplayName<span class="app-subtitle"> - @AppInfo.Subtitle -</span></MudText>
         <MudSpacer />
         <MudIconButton Icon="@Icons.Material.Filled.Undo" Color="Color.Inherit" Disabled="!Game.CanUndo" OnClick="Undo" aria-label="元に戻す" />
         <MudIconButton Icon="@Icons.Material.Filled.Redo" Color="Color.Inherit" Disabled="!Game.CanRedo" OnClick="Redo" aria-label="やり直す" />

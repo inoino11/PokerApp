@@ -14,6 +14,26 @@
     text-overflow: ellipsis;
 }
 
+.table-page ::deep .app-subtitle {
+    margin-left: 0.25em;
+    font-size: 0.75rem;
+    font-weight: 400;
+    opacity: 0.8;
+}
+
+/* スマホ幅では横に並べると副題が切れるので、名前の下に小さく置く */
+@media (max-width: 480px) {
+    .table-page ::deep .app-title {
+        line-height: 1.15;
+    }
+
+    .table-page ::deep .app-subtitle {
+        display: block;
+        margin-left: 0;
+        font-size: 0.65rem;
+    }
+}
+
 .table-seats {
     flex: 1;
     overflow-y: auto;
