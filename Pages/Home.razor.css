@@ -7,6 +7,13 @@
     margin: 0 auto;
 }
 
+.app-logo {
+    flex: none;
+    width: 30px;
+    height: 30px;
+    margin-right: 8px;
+}
+
 .table-page ::deep .app-title {
     font-weight: 700;
     white-space: nowrap;
@@ -91,6 +98,16 @@
 /* 幅の狭い端末では、帯のアイコンの余白を詰めてアプリ名を残す */
 @media (max-width: 360px) {
     .table-page ::deep .mud-appbar .mud-icon-button {
-        padding: 8px;
+        padding: 6px;
+    }
+
+    .table-page ::deep .mud-appbar .mud-toolbar {
+        padding-left: 10px;
+    }
+
+    .app-logo {
+        width: 26px;
+        height: 26px;
+        margin-right: 6px;
     }
 }

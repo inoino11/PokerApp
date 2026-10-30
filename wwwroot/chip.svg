@@ -1,0 +1,25 @@
+<!-- アイコンのチップ部分（上の帯で使う）。index.html の起動画面にも同じ絵がある -->
+<svg viewBox="-170 -170 340 340" xmlns="http://www.w3.org/2000/svg">
+  <circle r="168" fill="#fff" />
+  <g fill="#1b6e3c">
+  <rect x="-22" y="-154" width="44" height="34" rx="6" />
+  <rect x="-22" y="-154" width="44" height="34" rx="6" transform="rotate(45)" />
+  <rect x="-22" y="-154" width="44" height="34" rx="6" transform="rotate(90)" />
+  <rect x="-22" y="-154" width="44" height="34" rx="6" transform="rotate(135)" />
+  <rect x="-22" y="-154" width="44" height="34" rx="6" transform="rotate(180)" />
+  <rect x="-22" y="-154" width="44" height="34" rx="6" transform="rotate(225)" />
+  <rect x="-22" y="-154" width="44" height="34" rx="6" transform="rotate(270)" />
+  <rect x="-22" y="-154" width="44" height="34" rx="6" transform="rotate(315)" />
+  <circle r="100" />
+  </g>
+  <circle r="78" fill="none" stroke="#fff" stroke-width="8" />
+  <g transform="translate(-8 -12)" fill="#fff">
+  <path d="M14,48 C46,40 48,4 32,-14 C22,-26 34,-34 42,-24" fill="none" stroke="#fff" stroke-width="22" stroke-linecap="round" />
+  <ellipse cx="-2" cy="28" rx="24" ry="28" />
+  <ellipse cx="-8" cy="-24" rx="5" ry="9" />
+  <circle cx="-14" cy="-6" r="17" /><circle cx="-28" cy="0" r="9" /><circle cx="-16" cy="5" r="13" />
+  <ellipse cx="-4" cy="55" rx="20" ry="5" />
+  <circle cx="-19" cy="-10" r="3.2" fill="#1b6e3c" />
+  <path d="M-4,10 C8,16 14,30 12,44" fill="none" stroke="#1b6e3c" stroke-width="4" stroke-linecap="round" />
+  </g>
+</svg>

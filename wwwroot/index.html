@@ -30,7 +30,7 @@
 
     <!-- 起動中の全画面表示。MainLayout の描画後に appLoading.hide で消す -->
     <div id="app-loading">
-        <!-- アイコンのチップ（docs/icon/icon.svg の上半分）。はじいたように跳ねて回る -->
+        <!-- アイコンのチップ（wwwroot/chip.svg と同じ絵）。読み込みを待たずに出すため、ここに直接書く。はじいたように跳ねて回る -->
         <div class="app-loading-chip">
             <svg viewBox="-170 -170 340 340" aria-hidden="true">
                 <circle r="168" fill="#fff" />
@@ -58,7 +58,7 @@
             </svg>
         </div>
         <div class="app-loading-shadow"></div>
-        <div class="app-loading-text">ほお袋に詰め込み中...</div>
+        <div class="app-loading-text">チップ準備中...</div>
         <div id="app-loading-error" hidden>
             <p>起動できませんでした。</p>
             <button type="button" onclick="appLoading.recover()">修復して再読み込み</button>

@@ -17,6 +17,7 @@
 <div class="table-page">
     @* --- 上の帯 --- *@
     <MudAppBar Fixed="false" Dense="true" Elevation="0">
+        <img class="app-logo" src="chip.svg" alt="" />
         <MudText Typo="Typo.subtitle1" Class="app-title">@AppInfo.DisplayName<span class="app-subtitle"> - @AppInfo.Subtitle -</span></MudText>
         <MudSpacer />
         <MudIconButton Icon="@Icons.Material.Filled.Undo" Color="Color.Inherit" Disabled="!Game.CanUndo" OnClick="Undo" aria-label="元に戻す" />
