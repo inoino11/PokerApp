@@ -3,71 +3,75 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 
-<MudDialog>
+<MudDialog Class="settings-dialog">
     <TitleContent>設定</TitleContent>
     <DialogContent>
-        @* --- プリセット --- *@
-        <MudText Typo="Typo.subtitle2" Class="mb-1">プリセット</MudText>
-        <div class="d-flex gap-2 align-end">
+        @* --- プリセット（枠の中がプリセットに入る設定。上で読み込み、下で保存する） --- *@
+        <div class="preset-box">
+            <div class="preset-head">
+                <MudIcon Icon="@Icons.Material.Filled.Bookmarks" Size="Size.Small" />
+                <MudText Typo="Typo.subtitle2">プリセット</MudText>
+            </div>
+            <MudText Typo="Typo.caption" Class="d-block mb-2 preset-note">この枠の中の設定を、まとめて読み込み・保存します。</MudText>
+
             @* 選んだら下の欄に読み込む（ゲームに使うのは「適用」を押したとき） *@
-            <MudSelect T="string" Value="_presetName" ValueChanged="SelectPreset" Label="プリセットを読み込む" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1">
+            <MudSelect T="string" Value="_presetName" ValueChanged="SelectPreset" Label="プリセットを読み込む" Variant="Variant.Outlined" Margin="Margin.Dense">
                 @foreach (var p in Presets.All)
                 {
                     <MudSelectItem Value="@p.Name">@p.Name</MudSelectItem>
                 }
             </MudSelect>
-        </div>
-        <div class="d-flex gap-2 align-end mt-2">
-            <MudTextField @bind-Value="_saveName" Label="プリセット名" Placeholder="今の内容を保存" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
-            <MudButton Variant="Variant.Outlined" Disabled="string.IsNullOrWhiteSpace(_saveName)" OnClick="SavePreset">保存</MudButton>
-        </div>
-        @if (SelectedPreset is { Builtin: false } user)
-        {
-            <MudButton Size="Size.Small" Color="Color.Error" Class="mt-1" StartIcon="@Icons.Material.Filled.Delete" OnClick="() => DeletePreset(user)">
-                「@user.Name」を削除
-            </MudButton>
-        }
-
-        <MudDivider Class="my-3" />
-
-        @* --- ブラインド --- *@
-        <MudText Typo="Typo.subtitle2" Class="mb-1">ブラインド</MudText>
-        <div class="d-flex gap-2">
-            <MudNumericField @bind-Value="_minutes" Label="時間（分）" HelperText="0 なら固定" Min="0" Max="600" Variant="Variant.Outlined" Margin="Margin.Dense" />
-            <MudNumericField @bind-Value="_startingStack" Label="初期スタック" Min="0" Step="1000" Variant="Variant.Outlined" Margin="Margin.Dense" />
-        </div>
-        <MudSwitch @bind-Value="_triple" Label="トリプルブラインド（4 人以上のとき）" Color="Color.Primary" Class="mt-1" />
-
-        <div class="levels @(_triple ? "levels-triple" : "")">
-            <div class="level-row level-head">
-                <span>Lv</span><span>SB</span><span>BB</span>
-                @if (_triple) { <span>3rd</span> }
-                <span></span>
-            </div>
-            @for (var i = 0; i < _levels.Count; i++)
+            @if (SelectedPreset is { Builtin: false } user)
             {
-                var idx = i;
-                <div class="level-row">
-                    <span class="level-no">@(idx + 1)</span>
-                    <input class="level-input" type="number" inputmode="numeric" min="0" value="@_levels[idx].Sb"
-                           @onchange="e => _levels[idx] = _levels[idx] with { Sb = ParseChips(e) }" aria-label="Lv@(idx + 1) SB" />
-                    <input class="level-input" type="number" inputmode="numeric" min="1" value="@_levels[idx].Bb"
-                           @onchange="e => _levels[idx] = _levels[idx] with { Bb = ParseChips(e) }" aria-label="Lv@(idx + 1) BB" />
-                    @if (_triple)
-                    {
-                        <input class="level-input" type="number" inputmode="numeric" min="0" value="@_levels[idx].Third"
-                               @onchange="e => _levels[idx] = _levels[idx] with { Third = ParseChips(e) }" aria-label="Lv@(idx + 1) 3rd" />
-                    }
-                    <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Disabled="_levels.Count <= 1" OnClick="() => _levels.RemoveAt(idx)" aria-label="この行を消す" />
-                </div>
+                <MudButton Size="Size.Small" Color="Color.Error" Class="mt-1" StartIcon="@Icons.Material.Filled.Delete" OnClick="() => DeletePreset(user)">
+                    「@user.Name」を削除
+                </MudButton>
             }
-        </div>
-        <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="AddLevel">レベルを足す</MudButton>
 
-        <MudDivider Class="my-3" />
+            @* --- ブラインド --- *@
+            <MudText Typo="Typo.subtitle2" Class="mt-3 mb-1">ブラインド</MudText>
+            <div class="blind-basics">
+                <MudNumericField @bind-Value="_minutes" Label="ラウンド（分）" HelperText="0 ならブラインド固定" Min="0" Max="600" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                <MudNumericField @bind-Value="_startingStack" Label="初期スタック" Min="0" Step="1000" Variant="Variant.Outlined" Margin="Margin.Dense" />
+            </div>
+            <MudSwitch @bind-Value="_triple" Label="トリプルブラインド（4 人以上のとき）" Color="Color.Primary" Class="mt-1" />
+
+            <div class="levels @(_triple ? "levels-triple" : "")">
+                <div class="level-row level-head">
+                    <span>Lv</span><span>SB</span><span>BB</span>
+                    @if (_triple) { <span>3rd</span> }
+                    <span></span>
+                </div>
+                @for (var i = 0; i < _levels.Count; i++)
+                {
+                    var idx = i;
+                    <div class="level-row">
+                        <span class="level-no">@(idx + 1)</span>
+                        <input class="level-input" type="number" inputmode="numeric" min="0" value="@_levels[idx].Sb"
+                               @onchange="e => _levels[idx] = _levels[idx] with { Sb = ParseChips(e) }" aria-label="Lv@(idx + 1) SB" />
+                        <input class="level-input" type="number" inputmode="numeric" min="1" value="@_levels[idx].Bb"
+                               @onchange="e => _levels[idx] = _levels[idx] with { Bb = ParseChips(e) }" aria-label="Lv@(idx + 1) BB" />
+                        @if (_triple)
+                        {
+                            <input class="level-input" type="number" inputmode="numeric" min="0" value="@_levels[idx].Third"
+                                   @onchange="e => _levels[idx] = _levels[idx] with { Third = ParseChips(e) }" aria-label="Lv@(idx + 1) 3rd" />
+                        }
+                        <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Disabled="_levels.Count <= 1" OnClick="() => _levels.RemoveAt(idx)" aria-label="この行を消す" />
+                    </div>
+                }
+            </div>
+            <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="AddLevel">レベルを足す</MudButton>
+
+            @* 枠と同じ高さにし、枠の下の余白の分だけ持ち上げて、上下の端をそろえる *@
+            <div class="d-flex gap-2 align-end mt-3">
+                <MudTextField @bind-Value="_saveName" Label="プリセット名" Placeholder="この枠の内容を保存" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+                <MudButton Variant="Variant.Outlined" Class="preset-save" Disabled="string.IsNullOrWhiteSpace(_saveName)" OnClick="SavePreset">保存</MudButton>
+            </div>
+        </div>
 
         @* --- チップの単位 --- *@
-        <MudText Typo="Typo.subtitle2" Class="mb-1">チップの単位</MudText>
+        <MudText Typo="Typo.subtitle2" Class="mt-4 mb-1">チップの単位</MudText>
+        <MudText Typo="Typo.caption" Class="d-block preset-note">プリセットには入りません。</MudText>
         <MudSwitch @bind-Value="_roundBets" Label="ポットの % で出した額とチョップを単位で丸める" Color="Color.Primary" />
         <div class="d-flex gap-2 align-center">
             <MudSwitch @bind-Value="_autoUnit" Label="単位は今のレベルの SB" Color="Color.Primary" Disabled="!_roundBets" />

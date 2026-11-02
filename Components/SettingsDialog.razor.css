@@ -1,3 +1,51 @@
+/* プリセットに入る設定を枠で囲み、枠の外（チップの単位）は入らないことを見て分かるようにする */
+.preset-box {
+    padding: 10px 12px 12px;
+    border: 1px solid var(--mud-palette-primary);
+    border-radius: 8px;
+}
+
+.preset-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--mud-palette-primary);
+}
+
+.preset-note {
+    color: var(--mud-palette-text-secondary);
+}
+
+/* 「ラウンド（分）」のほうが名前が長いので、欄を少し広くして名前が切れないようにする */
+.blind-basics {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 8px;
+}
+
+/* 「0 ならブラインド固定」は単語の途中で折り返さない（隣の欄の下にはみ出してよい） */
+.blind-basics ::deep .mud-input-helper-text {
+    white-space: nowrap;
+    overflow: visible;
+}
+
+@media (max-width: 360px) {
+    .preset-box {
+        padding: 8px;
+    }
+
+    /* 横に 2 つ並べると欄の名前が切れるので、縦に並べる */
+    .blind-basics {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 入力欄（高さ 40px、下に 4px の余白）と上下の端をそろえる */
+::deep .preset-save {
+    height: 40px;
+    margin-bottom: 4px;
+}
+
 .levels {
     display: flex;
     flex-direction: column;

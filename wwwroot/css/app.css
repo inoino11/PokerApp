@@ -147,3 +147,13 @@ button {
     top: 0.5rem;
     cursor: pointer;
 }
+
+/* --- 設定ダイアログ（Components/SettingsDialog.razor） --- */
+/* 幅の狭い端末では、プリセットの枠の分だけ欄が狭くなるので、ダイアログの左右の余白を詰める。
+   ダイアログの外枠は MudBlazor が描くので CSS isolation が効かず、ここに書く */
+@media (max-width: 360px) {
+    .mud-dialog.settings-dialog .mud-dialog-content {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+}
