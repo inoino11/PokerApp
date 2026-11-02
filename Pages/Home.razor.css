@@ -2,15 +2,28 @@
 .table-page {
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
     height: 100dvh;
     max-width: 640px;
     margin: 0 auto;
+    padding-top: calc(48px + env(safe-area-inset-top)); /* 48px は Dense の帯の高さ */
 }
 
-/* 画面を端まで使う設定（viewport-fit=cover）なので、iPhone では時計や電池の帯の下まで広がる。
-   帯の色はそこまで伸ばし、中身は帯の下から始める */
+/* iOS 26 のホーム画面のアプリは、時計や電池の帯の下の中身をぼかす。画面の上端に位置を固定した
+   不透明で横幅いっぱいの要素があるときだけ、ぼかさずにその色で塗るので、帯を固定する。
+   帯を半透明にしたり backdrop-filter を付けたりすると、またぼける */
 .table-page ::deep .mud-appbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
     padding-top: env(safe-area-inset-top);
+}
+
+.table-page ::deep .mud-appbar .mud-toolbar {
+    max-width: 640px;
+    width: 100%;
+    margin: 0 auto;
 }
 
 .app-logo {
