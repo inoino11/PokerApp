@@ -22,14 +22,14 @@ public static class GameEngine
         SetStatus c => SetStatus(s, c),
         // MovePlayer は旧版の履歴を読むためだけに残しているので、ハンド中の制限はかけない
         MovePlayer c => Seat(s, c.PlayerId, s.Seated.ToList().FindIndex(p => p.Id == c.PlayerId) + Math.Sign(c.Direction)),
-        SeatPlayer c => s.Hand is null ? Seat(s, c.PlayerId, c.ToIndex) : throw new InvalidOperationException("席替えはハンドの合間にできます。"),
+        SeatPlayer c => s.Hand is null ? Seat(s, c.PlayerId, c.ToIndex) : throw new InvalidOperationException("席替えはハンドの合間にできます"),
         ChooseButton c => ChooseButton(s, c),
         RestartGame c => Restart(s, c),
         StartHand c => StartHand(s, c),
         Act c => Act(s, c),
         ChooseWinners c => ChooseWinners(s, c),
         UpdateSettings c => s with { Settings = Validate(c.Settings) },
-        _ => throw new InvalidOperationException("不明な操作です。"),
+        _ => throw new InvalidOperationException("不明な操作です"),
     });
 
     // 選んだ D の人が離席・退席などで参加できなくなったら、選んだことを取り消す（戻ってきても選び直すまでは自動の規則）
@@ -114,8 +114,8 @@ public static class GameEngine
 
     static GameState AddPlayer(GameState s, AddPlayer c)
     {
-        if (s.Seated.Count() >= GameState.MaxSeats) throw new InvalidOperationException($"席は {GameState.MaxSeats} までです。");
-        if (c.Stack < 0) throw new InvalidOperationException("額が不正です。");
+        if (s.Seated.Count() >= GameState.MaxSeats) throw new InvalidOperationException($"席は {GameState.MaxSeats} までです");
+        if (c.Stack < 0) throw new InvalidOperationException("額が不正です");
         var id = s.NextPlayerId;
         var player = new Player(id, $"P{id}", (id - 1) % 10, c.Stack,
             c.Stack > 0 ? PlayerStatus.Active : PlayerStatus.SittingOut, c.Stack);
@@ -125,7 +125,7 @@ public static class GameEngine
     static GameState Rename(GameState s, RenamePlayer c)
     {
         var name = c.Name.Trim();
-        if (name.Length == 0) throw new InvalidOperationException("名前が空です。");
+        if (name.Length == 0) throw new InvalidOperationException("名前が空です");
         return UpdatePlayer(s, c.PlayerId, p => p with { Name = name });
     }
 
@@ -138,9 +138,9 @@ public static class GameEngine
 
     static GameState SetStack(GameState s, SetStack c)
     {
-        if (c.Stack < 0) throw new InvalidOperationException("額が不正です。");
+        if (c.Stack < 0) throw new InvalidOperationException("額が不正です");
         var player = s.GetPlayer(c.PlayerId);
-        if (player.Status == PlayerStatus.Left) throw new InvalidOperationException("退席した人の額は変えられません。");
+        if (player.Status == PlayerStatus.Left) throw new InvalidOperationException("退席した人の額は変えられません");
         var delta = c.Stack - player.Stack;
         var status = player.Status;
         if (c.Stack == 0) status = PlayerStatus.SittingOut;
@@ -166,14 +166,14 @@ public static class GameEngine
     static GameState SetStatus(GameState s, SetStatus c)
     {
         var player = s.GetPlayer(c.PlayerId);
-        if (player.Status == PlayerStatus.Left) throw new InvalidOperationException("退席した人です。");
+        if (player.Status == PlayerStatus.Left) throw new InvalidOperationException("退席した人です");
         if (c.Status == PlayerStatus.Active)
         {
-            if (player.Stack <= 0) throw new InvalidOperationException("手元のチップがありません。");
+            if (player.Stack <= 0) throw new InvalidOperationException("手元のチップがありません");
             return UpdatePlayer(s, c.PlayerId, p => p with { Status = PlayerStatus.Active });
         }
 
-        if (IsInPot(s, c.PlayerId)) throw new InvalidOperationException("ポットに参加している間は抜けられません。");
+        if (IsInPot(s, c.PlayerId)) throw new InvalidOperationException("ポットに参加している間は抜けられません");
         // まだチップを出していない参加者は、降りたことにして抜ける
         if (s.Hand?.Seats.FirstOrDefault(x => x.PlayerId == c.PlayerId) is { Folded: false })
         {
@@ -204,8 +204,8 @@ public static class GameEngine
     // ハンドの途中に変えると、払ったブラインドと手番の順を組み直すことになるので、合間だけにする
     static GameState ChooseButton(GameState s, ChooseButton c)
     {
-        if (s.Hand is not null) throw new InvalidOperationException("D はハンドの合間に変えられます。");
-        if (!Eligible(s).Any(p => p.Id == c.PlayerId)) throw new InvalidOperationException("次のハンドに参加できる人だけ D にできます。");
+        if (s.Hand is not null) throw new InvalidOperationException("D はハンドの合間に変えられます");
+        if (!Eligible(s).Any(p => p.Id == c.PlayerId)) throw new InvalidOperationException("次のハンドに参加できる人だけ D にできます");
         return s with { ChosenButtonId = c.PlayerId };
     }
 
@@ -225,9 +225,9 @@ public static class GameEngine
 
     static GameState StartHand(GameState s, StartHand c)
     {
-        if (s.Hand is not null) throw new InvalidOperationException("ハンドの途中です。");
+        if (s.Hand is not null) throw new InvalidOperationException("ハンドの途中です");
         var eligible = Eligible(s).ToList();
-        var buttonId = NextButtonId(s) ?? throw new InvalidOperationException("参加できる人が 2 人以上必要です。");
+        var buttonId = NextButtonId(s) ?? throw new InvalidOperationException("参加できる人が 2 人以上必要です");
         var bi = eligible.FindIndex(p => p.Id == buttonId);
         var button = eligible[bi];
         var order = eligible.Skip(bi + 1).Concat(eligible.Take(bi + 1)).ToList();
@@ -265,8 +265,8 @@ public static class GameEngine
 
     static GameState Act(GameState s, Act c)
     {
-        var hand = s.Hand ?? throw new InvalidOperationException("ハンドが始まっていません。");
-        if (hand.Street == Street.Showdown || hand.ToActId != c.PlayerId) throw new InvalidOperationException("その人の手番ではありません。");
+        var hand = s.Hand ?? throw new InvalidOperationException("ハンドが始まっていません");
+        if (hand.Street == Street.Showdown || hand.ToActId != c.PlayerId) throw new InvalidOperationException("その人の手番ではありません");
         var idx = hand.Seats.FindIndex(x => x.PlayerId == c.PlayerId);
         var seat = hand.Seats[idx];
         var player = s.GetPlayer(c.PlayerId);
@@ -279,16 +279,16 @@ public static class GameEngine
                 folded = true;
                 break;
             case ActionKind.Check:
-                if (seat.StreetBet != hand.CurrentBet) throw new InvalidOperationException("チェックできません。");
+                if (seat.StreetBet != hand.CurrentBet) throw new InvalidOperationException("チェックできません");
                 break;
             case ActionKind.Call:
-                if (seat.StreetBet >= hand.CurrentBet) throw new InvalidOperationException("コールする額がありません。");
+                if (seat.StreetBet >= hand.CurrentBet) throw new InvalidOperationException("コールする額がありません");
                 put = CallAmount(hand, seat, player);
                 break;
             case ActionKind.Raise:
-                if (c.To <= hand.CurrentBet) throw new InvalidOperationException("今のベットより多い額にしてください。");
+                if (c.To <= hand.CurrentBet) throw new InvalidOperationException("今のベットより多い額にしてください");
                 put = c.To - seat.StreetBet;
-                if (put > player.Stack) throw new InvalidOperationException("手元のチップが足りません。");
+                if (put > player.Stack) throw new InvalidOperationException("手元のチップが足りません");
                 break;
             case ActionKind.AllIn:
                 put = player.Stack;
@@ -374,11 +374,11 @@ public static class GameEngine
 
     static GameState ChooseWinners(GameState s, ChooseWinners c)
     {
-        var hand = s.Hand ?? throw new InvalidOperationException("ハンドが始まっていません。");
-        var pot = (PendingPot(hand) ?? throw new InvalidOperationException("勝者を選ぶポットがありません。")).Pot;
+        var hand = s.Hand ?? throw new InvalidOperationException("ハンドが始まっていません");
+        var pot = (PendingPot(hand) ?? throw new InvalidOperationException("勝者を選ぶポットがありません")).Pot;
         var ids = c.PlayerIds.Distinct().ToImmutableList();
         if (ids.Count == 0 || ids.Any(id => !pot.EligibleIds.Contains(id)))
-            throw new InvalidOperationException("このポットの権利がない人が含まれています。");
+            throw new InvalidOperationException("このポットの権利がない人が含まれています");
         return TryFinish(s with { Hand = hand with { WinnerTiers = hand.WinnerTiers.Add(ids) } });
     }
 
@@ -432,9 +432,9 @@ public static class GameEngine
 
     static GameSettings Validate(GameSettings settings)
     {
-        if (settings.Levels.Count == 0) throw new InvalidOperationException("ブラインドのレベルが 1 つもありません。");
-        if (settings.Levels.Any(l => l.Sb < 0 || l.Bb <= 0 || l.Third < 0)) throw new InvalidOperationException("ブラインドの額が不正です。");
-        if (settings.LevelMinutes < 0) throw new InvalidOperationException("レベルの時間が不正です。");
+        if (settings.Levels.Count == 0) throw new InvalidOperationException("ブラインドのレベルが 1 つもありません");
+        if (settings.Levels.Any(l => l.Sb < 0 || l.Bb <= 0 || l.Third < 0)) throw new InvalidOperationException("ブラインドの額が不正です");
+        if (settings.LevelMinutes < 0) throw new InvalidOperationException("レベルの時間が不正です");
         return settings;
     }
 

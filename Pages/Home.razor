@@ -110,7 +110,7 @@
     {
         if (on && S.Hand is not null)
         {
-            Snackbar.Add("席替えはハンドの合間にできます。", Severity.Info);
+            Snackbar.Add("席替えはハンドの合間にできます", Severity.Info);
             return;
         }
         _seatMode = on;
@@ -128,7 +128,7 @@
                 await Device.NotifyLevelUpAsync();
                 var level = Clock.Level(S.Settings);
                 Snackbar.Add($"Lv{Clock.LevelIndex(S.Settings) + 1}（{Chips.Format(EffectiveLevel(level))}）に上がりました"
-                    + (S.Hand is null ? "" : "。次のハンドから"), Severity.Info);
+                    + (S.Hand is null ? "" : "（次のハンドから）"), Severity.Info);
             }
             StateHasChanged();
         }
