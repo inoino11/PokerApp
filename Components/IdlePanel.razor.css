@@ -28,11 +28,6 @@
     color: var(--mud-palette-error);
 }
 
-.idle-hint {
-    font-size: 0.85rem;
-    color: var(--mud-palette-warning);
-}
-
 .idle-panel ::deep .start-btn {
     min-height: 56px;
     text-transform: none;

@@ -13,13 +13,10 @@
         </div>
     }
 
-    @if (EligibleCount < 2)
-    {
-        <div class="idle-hint">ハンドを始めるには、チップを持って着席している人が 2 人以上必要です。</div>
-    }
+    @* 押せない理由はボタンの文言で伝える。参加できる人（着席中でチップがある人）が 2 人に満たない *@
     <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large" Disabled="EligibleCount < 2"
                StartIcon="@Icons.Material.Filled.PlayArrow" OnClick="OnStart" Class="start-btn">
-        @(State.HandCount == 0 ? "最初のハンドを始める" : "次のハンドへ")（@Chips.Format(NextLevel)）
+        @Label
     </MudButton>
 </div>
 
@@ -29,4 +26,8 @@
     [Parameter] public EventCallback OnStart { get; set; }
 
     private int EligibleCount => GameEngine.Eligible(State).Count();
+
+    private string Label =>
+        EligibleCount < 2 ? $"参加者待ち（あと {2 - EligibleCount} 人）"
+        : $"{(State.HandCount == 0 ? "ディール開始" : "次のハンドへ")}（{Chips.Format(NextLevel)}）";
 }

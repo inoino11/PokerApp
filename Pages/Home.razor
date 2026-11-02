@@ -33,13 +33,6 @@
 
     @* --- 席 --- *@
     <div class="table-seats">
-        @if (!S.Seated.Any())
-        {
-            <div class="empty-hint">
-                <MudText Typo="Typo.body1">「追加」でプレイヤーを足して始めましょう。</MudText>
-                <MudText Typo="Typo.caption">名前は P1, P2… と自動で付きます。あとから行をタップして変えられます。</MudText>
-            </div>
-        }
         <PlayerList State="S" OnPlayerClick="OpenPlayer" OnAdd="AddPlayer" SeatMode="_seatMode" SeatModeChanged="SetSeatMode" />
     </div>
 

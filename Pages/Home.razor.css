@@ -66,11 +66,6 @@
     min-height: 0;
 }
 
-.empty-hint {
-    padding: 24px 16px 8px;
-    text-align: center;
-}
-
 /* 大きさの違う文字と丸い札が並ぶので、ベースラインではなく中央でそろえる */
 .pot-bar {
     display: flex;

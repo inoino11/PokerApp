@@ -20,7 +20,7 @@ public class TableTests(AppFixture app)
         try
         {
             await AddPlayers(page, 3);
-            await page.GetByText("最初のハンドを始める").ClickAsync();
+            await page.GetByText("ディール開始").ClickAsync();
             await page.GetByRole(AriaRole.Button, new() { Name = "Fold", Exact = true }).ClickAsync();
             await page.GetByRole(AriaRole.Button, new() { Name = "Fold", Exact = true }).ClickAsync();
             await Assertions.Expect(page.GetByText("ハンド #1 の結果")).ToBeVisibleAsync();
@@ -39,7 +39,7 @@ public class TableTests(AppFixture app)
         try
         {
             await AddPlayers(page, 3);
-            await page.GetByText("最初のハンドを始める").ClickAsync();
+            await page.GetByText("ディール開始").ClickAsync();
             // 額を選ぶ画面では Fold・Call・All-in を出さない
             await page.GetByRole(AriaRole.Button, new() { Name = "Raise…" }).ClickAsync();
             await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = "Fold", Exact = true })).ToHaveCountAsync(0);
@@ -83,7 +83,7 @@ public class TableTests(AppFixture app)
             await page.GetByRole(AriaRole.Button, new() { Name = "確定" }).ClickAsync();
             await Assertions.Expect(page.Locator(".player-stack").First).ToHaveTextAsync("1,000");
 
-            await page.GetByText("最初のハンドを始める").ClickAsync();
+            await page.GetByText("ディール開始").ClickAsync();
             await page.GetByRole(AriaRole.Button, new() { Name = "All-in", Exact = true }).ClickAsync(); // P1
             await page.GetByRole(AriaRole.Button, new() { Name = "Call", Exact = false }).ClickAsync();  // P2
             await page.GetByRole(AriaRole.Button, new() { Name = "Call", Exact = false }).ClickAsync();  // P3
@@ -154,7 +154,7 @@ public class TableTests(AppFixture app)
             await Assertions.Expect(page.Locator(".badge-next")).ToHaveCountAsync(1);
             await Assertions.Expect(page.Locator(".player-row").First.Locator(".badge-next")).ToBeVisibleAsync();
 
-            await page.GetByText("最初のハンドを始める").ClickAsync();
+            await page.GetByText("ディール開始").ClickAsync();
             await page.GetByRole(AriaRole.Button, new() { Name = "席替え" }).ClickAsync();
             await Assertions.Expect(page.GetByText("席替えはハンドの合間にできます。")).ToBeVisibleAsync();
             await Assertions.Expect(page.Locator(".seat-handle")).ToHaveCountAsync(0);
@@ -183,7 +183,7 @@ public class TableTests(AppFixture app)
         try
         {
             await AddPlayers(page, 3);
-            await page.GetByText("最初のハンドを始める").ClickAsync();
+            await page.GetByText("ディール開始").ClickAsync();
             await Assertions.Expect(page.Locator(".input-lock")).ToHaveCountAsync(0);
             // P1 の Call を素早く 2 回押す。2 回目は P2 の同じ位置のボタンに当たるが、受け付けない
             var call = await page.GetByRole(AriaRole.Button, new() { Name = "Call", Exact = false }).BoundingBoxAsync();
@@ -217,7 +217,7 @@ public class TableTests(AppFixture app)
             await Assertions.Expect(rows.Nth(2).Locator(".badge-next")).ToBeVisibleAsync();
             await Assertions.Expect(page.Locator(".badge-next")).ToHaveCountAsync(1);
 
-            await page.GetByText("最初のハンドを始める").ClickAsync();
+            await page.GetByText("ディール開始").ClickAsync();
             await Assertions.Expect(rows.Nth(2).Locator(".badge-d")).ToBeVisibleAsync();
 
             // ハンドの開始と D の選択を戻すと、次D は先頭の人に戻る
@@ -238,19 +238,20 @@ public class TableTests(AppFixture app)
         try
         {
             await AddPlayers(page, 2);
-            await page.GetByText("最初のハンドを始める").ClickAsync();
+            await page.GetByText("ディール開始").ClickAsync();
             await page.GetByRole(AriaRole.Button, new() { Name = "All-in", Exact = true }).ClickAsync();
             await page.GetByRole(AriaRole.Button, new() { Name = "Call", Exact = false }).ClickAsync();
             await page.Locator(".winner-btn", new() { HasTextString = "P1" }).ClickAsync();
             await page.GetByRole(AriaRole.Button, new() { Name = "確定", Exact = true }).ClickAsync();
             var stacks = page.Locator(".player-stack");
             await Assertions.Expect(stacks.Nth(1)).ToHaveTextAsync("0");
+            await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = "参加者待ち（あと 1 人）" })).ToBeDisabledAsync();
 
             await page.GetByLabel("始め直す").ClickAsync();
             await page.GetByRole(AriaRole.Button, new() { Name = "同じメンバーで始め直す" }).ClickAsync();
             await Assertions.Expect(stacks.First).ToHaveTextAsync("10,000");
             await Assertions.Expect(stacks.Nth(1)).ToHaveTextAsync("10,000");
-            await Assertions.Expect(page.GetByText("最初のハンドを始める")).ToBeVisibleAsync();
+            await Assertions.Expect(page.GetByText("ディール開始")).ToBeVisibleAsync();
 
             await page.GetByLabel("元に戻す").ClickAsync();
             await Assertions.Expect(stacks.Nth(1)).ToHaveTextAsync("0");

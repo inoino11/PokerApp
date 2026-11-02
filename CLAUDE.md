@@ -5,7 +5,7 @@
 ## 仕様
 
 - 仕様は [docs/spec.md](docs/spec.md) にまとめてある。仕様を変えたら、そちらも直す。
-- 名前は `Services/AppInfo.cs` の定数（上の帯とタブ）、`wwwroot/index.html`（`<title>`・起動画面・OGP）、`wwwroot/manifest.json` の `name` / `short_name`（ホーム画面に入れたときの名前「ポーカー シマリス」）にある。変えるときはそろえる。
+- 名前は `Services/AppInfo.cs` の定数（上の帯とタブ）、`wwwroot/index.html`（`<title>`・起動画面・OGP）、`wwwroot/manifest.json` の `name`（正式な名前「シマリス ホールデム」）/ `short_name`（Android のアイコンの下に出る「シマリス」）、`index.html` の `apple-mobile-web-app-title`（iPhone のアイコンの下に出る「シマリス」）にある。変えるときはそろえる。
 - アイコンの元の絵は `docs/icon/`、共有用の画像は `wwwroot/ogp-image.jpg`。
 
 ## 技術スタック
@@ -156,6 +156,7 @@ PokerApp/
 
 ## 表示と文言
 
+- 用語は、卓で口にするポーカーの言葉（Fold・Call・Pot・D など）は英語、アプリの操作（追加・確定・一時離席など）は日本語にする。
 - 金銭や賭けに関わりうるツールでは、「金銭の賭けを推奨するものではありません」などの注記を `Services/Notices.cs` の定数にまとめ、関係する画面に出す。
 - データの扱い・規約・問い合わせは 1 ページ（例: 「データと規約」）にまとめ、改定日を書く。外部サービスを足したら、そのページも更新する。
 - 左メニューの項目名は 1 行に収まる長さ（メニュー幅 160px で 6 文字程度）にする。
