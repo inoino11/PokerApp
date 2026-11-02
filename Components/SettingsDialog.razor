@@ -12,7 +12,6 @@
                 <MudIcon Icon="@Icons.Material.Filled.Bookmarks" Size="Size.Small" />
                 <MudText Typo="Typo.subtitle2">プリセット</MudText>
             </div>
-            <MudText Typo="Typo.caption" Class="d-block mb-2 preset-note">この枠の中の設定を、まとめて読み込み・保存します。</MudText>
 
             @* 選んだら下の欄に読み込む（ゲームに使うのは「適用」を押したとき） *@
             <MudSelect T="string" Value="_presetName" ValueChanged="SelectPreset" Label="プリセットを読み込む" Variant="Variant.Outlined" Margin="Margin.Dense">
@@ -64,14 +63,13 @@
 
             @* 枠と同じ高さにし、枠の下の余白の分だけ持ち上げて、上下の端をそろえる *@
             <div class="d-flex gap-2 align-end mt-3">
-                <MudTextField @bind-Value="_saveName" Label="プリセット名" Placeholder="この枠の内容を保存" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+                <MudTextField @bind-Value="_saveName" Label="プリセット名" Placeholder="プリセットを保存" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
                 <MudButton Variant="Variant.Outlined" Class="preset-save" Disabled="string.IsNullOrWhiteSpace(_saveName)" OnClick="SavePreset">保存</MudButton>
             </div>
         </div>
 
         @* --- チップの単位 --- *@
         <MudText Typo="Typo.subtitle2" Class="mt-4 mb-1">チップの単位</MudText>
-        <MudText Typo="Typo.caption" Class="d-block preset-note">プリセットには入りません。</MudText>
         <MudSwitch @bind-Value="_roundBets" Label="ポットの % で出した額とチョップを単位で丸める" Color="Color.Primary" />
         <div class="d-flex gap-2 align-center">
             <MudSwitch @bind-Value="_autoUnit" Label="単位は今のレベルの SB" Color="Color.Primary" Disabled="!_roundBets" />
@@ -83,7 +81,6 @@
 
         <MudDivider Class="my-3" />
 
-        <MudText Typo="Typo.caption" Class="d-block">@Notices.NoGambling</MudText>
         <MudText Typo="Typo.caption" Class="d-block">@AppInfo.DisplayName @AppInfo.Version</MudText>
     </DialogContent>
     <DialogActions>
@@ -163,7 +160,7 @@
     {
         if (_levels.Any(l => l.Bb <= 0 || l.Sb < 0 || l.Third < 0))
         {
-            Snackbar.Add("BB は 1 以上、SB と 3rd は 0 以上にしてください。", Severity.Warning);
+            Snackbar.Add("BB は 1 以上、SB と 3rd は 0 以上にしてください", Severity.Warning);
             return;
         }
         if (_levels.Count == 0) return;

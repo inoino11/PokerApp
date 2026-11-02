@@ -12,10 +12,6 @@
     color: var(--mud-palette-primary);
 }
 
-.preset-note {
-    color: var(--mud-palette-text-secondary);
-}
-
 /* 「ラウンド（分）」のほうが名前が長いので、欄を少し広くして名前が切れないようにする */
 .blind-basics {
     display: grid;
@@ -44,6 +40,8 @@
 ::deep .preset-save {
     height: 40px;
     margin-bottom: 4px;
+    min-width: 0;
+    padding: 0 12px;
 }
 
 .levels {
