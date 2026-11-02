@@ -23,7 +23,7 @@ public class TableTests(AppFixture app)
             await page.GetByText("ディール開始").ClickAsync();
             await page.GetByRole(AriaRole.Button, new() { Name = "Fold", Exact = true }).ClickAsync();
             await page.GetByRole(AriaRole.Button, new() { Name = "Fold", Exact = true }).ClickAsync();
-            await Assertions.Expect(page.GetByText("ハンド #1 の結果")).ToBeVisibleAsync();
+            await Assertions.Expect(page.GetByText("前回の結果")).ToBeVisibleAsync();
             await Assertions.Expect(page.GetByText("P3 +50")).ToBeVisibleAsync();
         }
         finally
@@ -102,7 +102,7 @@ public class TableTests(AppFixture app)
             await Assertions.Expect(page.Locator(".showdown-later")).ToHaveCountAsync(0);
             await page.Locator(".winner-btn", new() { HasTextString = "P2" }).ClickAsync();
             await page.GetByRole(AriaRole.Button, new() { Name = "確定", Exact = true }).ClickAsync();
-            await Assertions.Expect(page.GetByText("ハンド #1 の結果")).ToBeVisibleAsync();
+            await Assertions.Expect(page.GetByText("前回の結果")).ToBeVisibleAsync();
             await Assertions.Expect(page.Locator(".player-stack").First).ToHaveTextAsync("3,000");
         }
         finally

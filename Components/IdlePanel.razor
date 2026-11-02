@@ -2,7 +2,7 @@
 <div class="idle-panel">
     @if (State.LastResult is { } result)
     {
-        <div class="result-title">ハンド #@result.HandNumber の結果</div>
+        <div class="result-title">前回の結果</div>
         <div class="result-list">
             @foreach (var r in result.Players.Where(r => r.Net != 0).OrderByDescending(r => r.Net))
             {
