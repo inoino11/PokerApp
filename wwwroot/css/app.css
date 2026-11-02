@@ -8,6 +8,12 @@ body {
     background: var(--mud-palette-background);
 }
 
+/* ボタンを続けて押したときに、ダブルタップで画面が拡大されないようにする（2 本指での拡大はできる）。
+   スクロールする枠の中には html の指定が届かないので、全要素に付ける。個別の指定（席替えのつまみの none など）が優先される */
+* {
+    touch-action: manipulation;
+}
+
 button {
     font-family: inherit;
     cursor: pointer;

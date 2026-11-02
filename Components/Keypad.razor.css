@@ -12,7 +12,6 @@
     font-weight: 600;
     background: var(--mud-palette-action-default-hover);
     color: var(--mud-palette-text-primary);
-    touch-action: manipulation;
 }
 
 .keypad-key:active {
