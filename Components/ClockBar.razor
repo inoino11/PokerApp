@@ -1,34 +1,41 @@
-@* ブラインドのレベルと時計。タップするとレベルと残り時間を手で変えるメニューを開く *@
+@* ブラインドのレベルと時計。レベルは左右の矢印で上げ下げし、残り時間は時刻をタップして開くメニューで変える。
+   最終レベルでは時計を進める意味がないので、時刻と再生・一時停止のボタンを出さない *@
 <div class="clock-bar">
-    <MudMenu AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft" Class="clock-menu">
-        <ActivatorContent>
-            <div class="clock-level" @onclick="e => context.ToggleAsync(e)">
-                <span class="clock-lv">Lv@(LevelIndex + 1)</span>
-                <span class="clock-blinds">@Chips.Format(Level)</span>
-                @if (NextHandLevel)
-                {
-                    <MudChip T="string" Size="Size.Small" Color="Color.Warning" Class="ml-1">次のハンドから</MudChip>
-                }
-            </div>
-        </ActivatorContent>
-        <ChildContent>
-            <MudMenuItem Icon="@Icons.Material.Filled.KeyboardArrowUp" OnClick="() => OnLevelDelta.InvokeAsync(1)" Disabled="IsLastLevel">レベルを上げる</MudMenuItem>
-            <MudMenuItem Icon="@Icons.Material.Filled.KeyboardArrowDown" OnClick="() => OnLevelDelta.InvokeAsync(-1)" Disabled="LevelIndex == 0">レベルを下げる</MudMenuItem>
-            @if (ShowClock)
-            {
-                <MudMenuItem Icon="@Icons.Material.Filled.Add" OnClick="() => OnMinutesDelta.InvokeAsync(1)">残り時間 +1 分</MudMenuItem>
-                <MudMenuItem Icon="@Icons.Material.Filled.Remove" OnClick="() => OnMinutesDelta.InvokeAsync(-1)">残り時間 −1 分</MudMenuItem>
-            }
-        </ChildContent>
-    </MudMenu>
+    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" Size="Size.Small" Class="clock-step" Disabled="LevelIndex == 0"
+                   OnClick="() => OnLevelDelta.InvokeAsync(-1)" aria-label="レベルを下げる" />
+    @* 「次のハンドから」は札にすると帯の横幅が足りなくなるので、額の下に小さく出す *@
+    <div class="clock-level">
+        <div class="clock-main">
+            <span class="clock-lv">Lv@(LevelIndex + 1)</span>
+            <span class="clock-blinds">@Chips.Format(Level)</span>
+        </div>
+        @if (NextHandLevel)
+        {
+            <span class="clock-next">次のハンドから</span>
+        }
+    </div>
+    <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" Class="clock-step" Disabled="IsLastLevel"
+                   OnClick="() => OnLevelDelta.InvokeAsync(1)" aria-label="レベルを上げる" />
 
     <MudSpacer />
 
-    @if (ShowClock)
+    @if (ShowClock && IsLastLevel)
     {
-        <span class="clock-time @(Running ? "" : "clock-paused")">
-            @(IsLastLevel ? "最終レベル" : $"{(int)Remaining.TotalMinutes:00}:{Remaining.Seconds:00}")
-        </span>
+        <span class="clock-last">最終レベル</span>
+    }
+    else if (ShowClock)
+    {
+        <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+            <ActivatorContent>
+                <span class="clock-time @(Running ? "" : "clock-paused")" @onclick="e => context.ToggleAsync(e)">
+                    @($"{(int)Remaining.TotalMinutes:00}:{Remaining.Seconds:00}")
+                </span>
+            </ActivatorContent>
+            <ChildContent>
+                <MudMenuItem Icon="@Icons.Material.Filled.Add" OnClick="() => OnMinutesDelta.InvokeAsync(1)">残り時間 +1 分</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.Remove" OnClick="() => OnMinutesDelta.InvokeAsync(-1)">残り時間 −1 分</MudMenuItem>
+            </ChildContent>
+        </MudMenu>
         <MudIconButton Icon="@(Running ? Icons.Material.Filled.Pause : Icons.Material.Filled.PlayArrow)"
                        Color="@(Running ? Color.Default : Color.Primary)" Variant="@(Running ? Variant.Text : Variant.Filled)"
                        Size="Size.Medium" Class="clock-toggle" OnClick="OnToggle" aria-label="@(Running ? "一時停止" : "再開")" />

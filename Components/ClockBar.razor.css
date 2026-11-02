@@ -10,9 +10,31 @@
 
 .clock-level {
     display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.15;
+    white-space: nowrap;
+}
+
+.clock-main {
+    display: flex;
     align-items: baseline;
     gap: 8px;
-    cursor: pointer;
+}
+
+.clock-next {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--mud-palette-warning);
+}
+
+/* 矢印はレベルの表示に寄せ、帯の左端は少し詰める */
+.clock-bar ::deep .clock-step {
+    margin: 0 -6px;
+}
+
+.clock-bar ::deep .clock-step:first-child {
+    margin-left: -8px;
 }
 
 .clock-lv {
@@ -29,6 +51,37 @@
     font-size: 1.6rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
+    cursor: pointer;
+}
+
+.clock-last {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--mud-palette-text-secondary);
+    white-space: nowrap;
+}
+
+/* 幅の狭い端末では、額が大きいレベル（2,000 / 4,000 など）でも時計まで 1 行に収まるよう文字を小さくする */
+@media (max-width: 360px) {
+    .clock-bar {
+        gap: 6px;
+    }
+
+    .clock-main {
+        gap: 4px;
+    }
+
+    .clock-lv {
+        font-size: 0.75rem;
+    }
+
+    .clock-blinds {
+        font-size: 1.15rem;
+    }
+
+    .clock-time {
+        font-size: 1.3rem;
+    }
 }
 
 .clock-paused {
