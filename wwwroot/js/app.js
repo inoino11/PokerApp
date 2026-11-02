@@ -1,10 +1,18 @@
 // 起動中の全画面表示
 window.appLoading = {
+    // チップが宙にあるうちに消すと途切れて見えるので、着地を待ってから消す（待つのは長くても 1 秒ほど）。
+    // 時間の区切りは app.css の app-chip-flip（1.8 秒、15% で跳ね、75% で着地）に合わせる
     hide() {
         const el = document.getElementById('app-loading');
         if (!el) return;
-        el.classList.add('done');
-        setTimeout(() => el.remove(), 400);
+        const cycle = 1800, lift = cycle * 0.15, land = cycle * 0.75;
+        const anim = el.querySelector('.app-loading-chip')?.getAnimations?.()[0];
+        const t = anim ? Number(anim.currentTime) % cycle : 0;
+        const wait = t > lift && t < land ? land - t : 0;
+        setTimeout(() => {
+            el.classList.add('done');
+            setTimeout(() => el.remove(), 400);
+        }, wait);
     },
     fail() {
         document.getElementById('app-loading')?.classList.add('failed');
