@@ -89,6 +89,11 @@
     }
 }
 
+/* 残り 1 分。止めている間はグレーの明滅を優先する */
+.clock-soon {
+    color: var(--mud-palette-warning);
+}
+
 .clock-paused {
     color: var(--mud-palette-text-disabled);
     animation: paused-pulse 1.2s ease-in-out infinite alternate;

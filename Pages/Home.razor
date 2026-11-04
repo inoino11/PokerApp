@@ -142,6 +142,8 @@
                 var text = $"Lv{Clock.LevelIndex(S.Settings) + 1}（{Chips.Format(EffectiveLevel(Clock.Level(S.Settings)))}）";
                 Snackbar.Add(@<span>ブラインドアップ<br />@text</span>, Severity.Info);
             }
+            // 1 分前は卓の進行を邪魔しないよう、通知は出さず音とバイブと時刻の色だけにする
+            if (Clock.CheckOneMinute(S.Settings)) await Device.NotifyOneMinuteAsync();
             StateHasChanged();
         }
         finally

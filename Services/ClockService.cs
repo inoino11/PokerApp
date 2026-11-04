@@ -17,6 +17,7 @@ public sealed class ClockService(ILocalStorageService storage, TimeProvider time
 {
     private readonly TimeProvider _time = time;
     private ClockData _d = new(0, false, false, 0, DateTimeOffset.MinValue);
+    private TimeSpan? _lastRemaining;
 
     public bool Running => _d.Running;
     public bool Started => _d.Started;
@@ -70,6 +71,25 @@ public sealed class ClockService(ILocalStorageService storage, TimeProvider time
         await SaveAsync(_d with { LevelIndex = level, ElapsedMs = elapsed, AnchorUtc = _time.GetUtcNow() });
         return true;
     }
+
+    /// <summary>
+    /// 残り時間が 1 分を切った瞬間だけ true。前回呼んだときの残りと比べるので、開き直した直後の 1 回目は知らせない。
+    /// </summary>
+    public bool CheckOneMinute(GameSettings s)
+    {
+        var before = _lastRemaining;
+        // ラウンドが 1 分以下だと始まってすぐ鳴るので知らせない
+        if (!_d.Running || s.LevelMinutes <= 1 || IsLastLevel(s))
+        {
+            _lastRemaining = null;
+            return false;
+        }
+        var now = Remaining(s);
+        _lastRemaining = now;
+        return before > OneMinute && now <= OneMinute && now > TimeSpan.Zero;
+    }
+
+    private static readonly TimeSpan OneMinute = TimeSpan.FromMinutes(1);
 
     /// <summary>
     /// 最初のハンドを始めたときに時計を動かす。一度動かしたあとは一時停止の状態を変えない。

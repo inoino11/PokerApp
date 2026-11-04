@@ -32,7 +32,7 @@
     {
         <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
             <ActivatorContent>
-                <span class="clock-time @(Running ? "" : "clock-paused")" @onclick="e => context.ToggleAsync(e)">
+                <span class="clock-time @(!Running ? "clock-paused" : Remaining <= TimeSpan.FromMinutes(1) ? "clock-soon" : "")" @onclick="e => context.ToggleAsync(e)">
                     @($"{(int)Remaining.TotalMinutes:00}:{Remaining.Seconds:00}")
                 </span>
             </ActivatorContent>

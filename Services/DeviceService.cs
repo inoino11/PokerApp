@@ -21,6 +21,8 @@ public sealed class DeviceService(IJSRuntime js)
 
     public ValueTask NotifyLevelUpAsync() => js.InvokeVoidAsync("appDevice.levelUp");
 
+    public ValueTask NotifyOneMinuteAsync() => js.InvokeVoidAsync("appDevice.oneMinute");
+
     public ValueTask ScrollToActiveAsync() => js.InvokeVoidAsync("appDevice.scrollToActive");
 
     /// <summary>

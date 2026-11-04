@@ -73,6 +73,54 @@ public class ClockServiceTests
         Assert.Equal(1, clock.LevelIndex(Settings));
         Assert.Equal(TimeSpan.FromMinutes(10), clock.Remaining(Settings));
     }
+
+    [Fact]
+    public async Task 残り1分を切った瞬間だけ知らせる()
+    {
+        var time = new FakeTime();
+        var clock = new ClockService(FakeStorage.Create().Service, time);
+        await clock.StartIfFirstAsync();
+        time.Advance(TimeSpan.FromSeconds(9 * 60 - 1));
+        Assert.False(clock.CheckOneMinute(Settings));  // 1 回目は比べる相手がない
+
+        time.Advance(TimeSpan.FromSeconds(2));
+        Assert.True(clock.CheckOneMinute(Settings));
+        time.Advance(TimeSpan.FromSeconds(1));
+        Assert.False(clock.CheckOneMinute(Settings));
+
+        await clock.AddMinutesAsync(Settings, 1);  // 残り 1:58
+        Assert.False(clock.CheckOneMinute(Settings));
+        time.Advance(TimeSpan.FromSeconds(60));
+        Assert.True(clock.CheckOneMinute(Settings));
+    }
+
+    [Fact]
+    public async Task 開き直した直後と止めている間と最終レベルでは知らせない()
+    {
+        var time = new FakeTime();
+        var (storage, _) = FakeStorage.Create();
+        var clock = new ClockService(storage, time);
+        await clock.StartIfFirstAsync();
+        time.Advance(TimeSpan.FromSeconds(9 * 60 + 30));
+        var reopened = new ClockService(storage, time);
+        await reopened.InitializeAsync();
+        Assert.False(reopened.CheckOneMinute(Settings));
+
+        await clock.SetLevelAsync(Settings, 0);
+        time.Advance(TimeSpan.FromSeconds(9 * 60 - 1));
+        Assert.False(clock.CheckOneMinute(Settings));
+        await clock.ToggleAsync();
+        Assert.False(clock.CheckOneMinute(Settings));
+        await clock.ToggleAsync();
+        time.Advance(TimeSpan.FromSeconds(2));
+        Assert.False(clock.CheckOneMinute(Settings));  // 止めたところで比べる相手を捨てている
+
+        await clock.SetLevelAsync(Settings, 2);
+        time.Advance(TimeSpan.FromSeconds(9 * 60 - 1));
+        Assert.False(clock.CheckOneMinute(Settings));
+        time.Advance(TimeSpan.FromSeconds(2));
+        Assert.False(clock.CheckOneMinute(Settings));
+    }
 }
 
 public class GameStateServiceTests

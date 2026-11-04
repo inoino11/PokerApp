@@ -120,19 +120,27 @@ window.appDevice = {
 
     levelUp() {
         try { navigator.vibrate?.([200, 100, 200]); } catch { }
+        this._beep(0, 880);
+        this._beep(0.3, 1175);
+    },
+
+    // レベルアップの 2 音と聞き分けられるよう、低めの 1 音にする
+    oneMinute() {
+        try { navigator.vibrate?.([100]); } catch { }
+        this._beep(0, 660);
+    },
+
+    _beep(t, f) {
         try {
             const ctx = this._audio ??= new (window.AudioContext || window.webkitAudioContext)();
-            const beep = (t, f) => {
-                const o = ctx.createOscillator();
-                const g = ctx.createGain();
-                o.frequency.value = f;
-                g.gain.setValueAtTime(0.25, ctx.currentTime + t);
-                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.25);
-                o.connect(g).connect(ctx.destination);
-                o.start(ctx.currentTime + t);
-                o.stop(ctx.currentTime + t + 0.3);
-            };
-            beep(0, 880); beep(0.3, 1175);
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.frequency.value = f;
+            g.gain.setValueAtTime(0.25, ctx.currentTime + t);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.25);
+            o.connect(g).connect(ctx.destination);
+            o.start(ctx.currentTime + t);
+            o.stop(ctx.currentTime + t + 0.3);
         } catch { }
     },
 
