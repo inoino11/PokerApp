@@ -24,6 +24,18 @@ public static class Chips
         l.Third > 0 ? $"{Format(l.Sb)}\u00A0/\u00A0{Format(l.Bb)}\u00A0/\u00A0{Format(l.Third)}" : $"{Format(l.Sb)}\u00A0/\u00A0{Format(l.Bb)}";
 
     /// <summary>
+    /// スタックが BB の何倍かを「32 BB」の形で返す。残りが少ないほど細かさが要るので、10 BB 未満は小数 1 桁にする（どちらも切り捨て）。
+    /// スタックが 0 か BB が 0 以下なら空。
+    /// </summary>
+    public static string FormatBb(long stack, long bb)
+    {
+        if (stack <= 0 || bb <= 0) return "";
+        if (stack >= bb * 10) return $"{stack / bb:N0} BB";
+        var tenths = stack * 10 / bb;
+        return $"{tenths / 10}.{tenths % 10} BB";
+    }
+
+    /// <summary>
     /// プレイヤーの色。ColorIndex で引く。
     /// </summary>
     public static readonly string[] PlayerColors =

@@ -84,12 +84,26 @@
     font-variant-numeric: tabular-nums;
 }
 
-.player-stack {
+.player-stack-col {
     min-width: 72px;
     text-align: right;
+}
+
+.player-stack {
     font-size: 1.1rem;
     font-weight: 700;
+    line-height: 1.25;
     font-variant-numeric: tabular-nums;
+}
+
+.player-bb {
+    font-size: 0.7rem;
+    color: var(--mud-palette-text-secondary);
+    white-space: nowrap;
+}
+
+.player-bb:empty {
+    display: none;
 }
 
 .row-to-act {

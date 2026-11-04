@@ -38,7 +38,8 @@
 
     @* --- 席 --- *@
     <div class="table-seats">
-        <PlayerList State="S" OnPlayerClick="OpenPlayer" OnAdd="AddPlayer" SeatMode="_seatMode" SeatModeChanged="SetSeatMode" />
+        <PlayerList State="S" OnPlayerClick="OpenPlayer" OnAdd="AddPlayer" SeatMode="_seatMode" SeatModeChanged="SetSeatMode"
+                    BigBlind="@(S.Hand?.Blinds.Bb ?? Clock.Level(S.Settings).Bb)" />
     </div>
 
     @* --- ポット（席替え中は一覧を広く使うため、ポットと操作を隠す。勝者を選ぶ間は、パネルの見出しにポットの額が出るので隠す） --- *@

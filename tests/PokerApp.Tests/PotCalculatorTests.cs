@@ -98,4 +98,15 @@ public class ChipsTests
     [InlineData("1.5")]
     [InlineData("1000000000000")]
     public void 読めない額(string text) => Assert.False(Models.Chips.TryParse(text, out _));
+
+    [Theory]
+    [InlineData(3250L, 100L, "32 BB")]
+    [InlineData(1000L, 100L, "10 BB")]
+    [InlineData(999L, 100L, "9.9 BB")]
+    [InlineData(450L, 100L, "4.5 BB")]
+    [InlineData(5L, 100L, "0.0 BB")]
+    [InlineData(250000L, 100L, "2,500 BB")]
+    [InlineData(0L, 100L, "")]
+    [InlineData(1000L, 0L, "")]
+    public void BB換算(long stack, long bb, string expected) => Assert.Equal(expected, Models.Chips.FormatBb(stack, bb));
 }
