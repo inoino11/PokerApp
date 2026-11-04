@@ -143,9 +143,20 @@
 }
 
 .board-open {
+    position: relative;
     border: 1.5px solid var(--mud-palette-lines-inputs);
     background: #fff;
-    box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 10px var(--street);
+}
+
+/* 開いたカードには、アイコンのトランプと同じどんぐりをストリートの色で描く。形は docs/icon/icon.svg のどんぐりから取った */
+.board-open::after {
+    content: "";
+    position: absolute;
+    inset: 2px 1px;
+    background: var(--street);
+    -webkit-mask: var(--acorn) center / contain no-repeat;
+    mask: var(--acorn) center / contain no-repeat;
+    --acorn: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-42 -48 84 110'%3E%3Crect x='-5' y='-46' width='10' height='16' rx='4'/%3E%3Cpath d='M-40,-4 C-40,-38 40,-38 40,-4 Z'/%3E%3Cpath d='M-31,2 L31,2 C31,32 13,54 0,60 C-13,54 -31,32 -31,2 Z'/%3E%3C/svg%3E");
 }
 
 .pot-label {
