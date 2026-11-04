@@ -114,10 +114,39 @@
 }
 
 /* ストリートごとに色を分け、進んだことがひと目で分かるようにする。白い文字が読める濃さにそろえる */
-.street-preflop { background: #546e7a; }
-.street-flop { background: #2e7d32; }
-.street-turn { background: #e65100; }
-.street-river { background: #1565c0; }
+.street-preflop { --street: #546e7a; }
+.street-flop { --street: #2e7d32; }
+.street-turn { --street: #e65100; }
+.street-river, .street-showdown { --street: #1565c0; }
+
+.pot-street {
+    background: var(--street);
+}
+
+.board {
+    display: flex;
+    gap: 3px;
+}
+
+/* Flop の 3 枚と Turn・River の間をあけ、卓の並びに似せる */
+.board-card:nth-child(4),
+.board-card:nth-child(5) {
+    margin-left: 4px;
+}
+
+.board-card {
+    width: 16px;
+    height: 22px;
+    box-sizing: border-box;
+    border: 1.5px dashed var(--mud-palette-lines-inputs);
+    border-radius: 3px;
+}
+
+.board-open {
+    border: 1.5px solid var(--mud-palette-lines-inputs);
+    background: #fff;
+    box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 10px var(--street);
+}
 
 .pot-label {
     font-size: 0.8rem;

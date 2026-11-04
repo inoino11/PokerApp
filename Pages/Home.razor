@@ -44,8 +44,16 @@
     @* --- ポット（席替え中は一覧を広く使うため、ポットと操作を隠す。勝者を選ぶ間は、パネルの見出しにポットの額が出るので隠す） --- *@
     @if (!_seatMode && S.Hand is { } hand && GameEngine.PendingPot(hand) is null)
     {
+        var street = $"street-{hand.Street.ToString().ToLowerInvariant()}";
         <div class="pot-bar">
-            <span class="pot-street street-@hand.Street.ToString().ToLowerInvariant()">@StreetName(hand.Street)</span>
+            @* 場に開いたカードの枚数を卓と同じ 3・1・1 の並びで見せ、名前を読まなくてもストリートが分かるようにする *@
+            <span class="board @street" aria-hidden="true">
+                @for (var i = 0; i < 5; i++)
+                {
+                    <span class="board-card @(i < BoardCards(hand.Street) ? "board-open" : "")"></span>
+                }
+            </span>
+            <span class="pot-street @street">@StreetName(hand.Street)</span>
             <span class="pot-label">Pot</span>
             <span class="pot-total">@Chips.Format(GameEngine.PotTotal(hand))</span>
         </div>
@@ -144,6 +152,14 @@
 
     // トリプルブラインドを使わない設定なら 3 番目の額は表示しない
     private BlindLevel EffectiveLevel(BlindLevel level) => S.Settings.TripleBlind ? level : level with { Third = 0 };
+
+    private static int BoardCards(Street street) => street switch
+    {
+        Street.Preflop => 0,
+        Street.Flop => 3,
+        Street.Turn => 4,
+        _ => 5,
+    };
 
     private static string StreetName(Street street) => street switch
     {
