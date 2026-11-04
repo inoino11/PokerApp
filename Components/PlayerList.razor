@@ -1,6 +1,32 @@
 @* 席の一覧。次に行動する人を強調する。行をタップするとプレイヤーのメニューを開く。
    席替えモードでは行の右端のつまみをドラッグして並べ替える（ドラッグは wwwroot/js/app.js の seatDrag が受け持つ） *@
 <div class="player-list @(SeatMode ? "seat-mode" : "")">
+    @* 人数で位置が変わらないよう一覧の上に置く（下だと続けて追加するとき、足したばかりの人の行を押してしまう） *@
+    <div class="list-tools">
+        @if (SeatMode)
+        {
+            <span class="seat-hint">≡ をつかんで上下に動かします</span>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="() => SeatModeChanged.InvokeAsync(false)">完了</MudButton>
+        }
+        else
+        {
+            @if (State.Seated.Count() < GameState.MaxSeats)
+            {
+                <button type="button" class="list-btn player-add" @onclick="OnAdd">
+                    <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Size="Size.Small" />
+                    追加（@Chips.Format(State.Settings.StartingStack)）
+                </button>
+            }
+            @* 2 人そろってから出すと「追加」の幅が縮んで位置がずれるので、最初から出して押せなくしておく。
+               ハンドの途中は押せても入らない（理由は親が知らせる） *@
+            <button type="button" class="list-btn seat-toggle @(Hand is null ? "" : "seat-locked")" disabled="@(State.Seated.Count() < 2)"
+                    @onclick="() => SeatModeChanged.InvokeAsync(true)">
+                <MudIcon Icon="@Icons.Material.Filled.SwapVert" Size="Size.Small" />
+                席替え
+            </button>
+        }
+    </div>
+
     @foreach (var p in State.Seated)
     {
         var seat = Hand?.Seats.FirstOrDefault(x => x.PlayerId == p.Id);
@@ -33,32 +59,6 @@
             }
         </div>
     }
-
-    <div class="list-tools">
-        @if (SeatMode)
-        {
-            <span class="seat-hint">≡ をつかんで上下に動かします</span>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="() => SeatModeChanged.InvokeAsync(false)">完了</MudButton>
-        }
-        else
-        {
-            @if (State.Seated.Count() < GameState.MaxSeats)
-            {
-                <button type="button" class="list-btn player-add" @onclick="OnAdd">
-                    <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Size="Size.Small" />
-                    追加（@Chips.Format(State.Settings.StartingStack)）
-                </button>
-            }
-            @if (State.Seated.Count() >= 2)
-            {
-                @* ハンドの途中は押せても入らない（理由は親が知らせる） *@
-                <button type="button" class="list-btn seat-toggle @(Hand is null ? "" : "seat-locked")" @onclick="() => SeatModeChanged.InvokeAsync(true)">
-                    <MudIcon Icon="@Icons.Material.Filled.SwapVert" Size="Size.Small" />
-                    席替え
-                </button>
-            }
-        }
-    </div>
 </div>
 
 @code {
