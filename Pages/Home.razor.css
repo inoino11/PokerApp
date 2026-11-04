@@ -26,6 +26,35 @@
     margin: 0 auto;
 }
 
+.table-page ::deep .appbar-labeled {
+    min-width: 44px;
+    height: 44px;
+    padding: 0 2px;
+    border-radius: 8px;
+}
+
+.table-page ::deep .appbar-labeled .mud-button-label {
+    flex-direction: column;
+    line-height: 1;
+}
+
+.table-page ::deep .appbar-labeled .mud-icon-root {
+    font-size: 1.375rem;
+}
+
+.table-page ::deep .appbar-labeled span:last-child {
+    margin-top: 1px;
+    font-size: 0.6rem;
+    font-weight: 400;
+    white-space: nowrap;
+}
+
+/* MudBlazor の押せないときの灰色は緑の帯の上で読めないので、帯の文字の色を薄くして使う。
+   MudBlazor 側が !important なので、こちらも付ける */
+.table-page ::deep .appbar-labeled:disabled {
+    color: rgba(255, 255, 255, 0.4) !important;
+}
+
 .app-logo {
     flex: none;
     width: 30px;
@@ -117,6 +146,11 @@
 
     .table-page ::deep .mud-appbar .mud-toolbar {
         padding-left: 10px;
+    }
+
+    .table-page ::deep .appbar-labeled {
+        min-width: 40px;
+        padding: 0;
     }
 
     .app-logo {

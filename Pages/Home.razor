@@ -20,8 +20,13 @@
         <img class="app-logo" src="chip.svg" alt="" />
         <MudText Typo="Typo.subtitle1" Class="app-title">@AppInfo.DisplayName<span class="app-subtitle"> - @AppInfo.Subtitle -</span></MudText>
         <MudSpacer />
-        <MudIconButton Icon="@Icons.Material.Filled.Undo" Color="Color.Inherit" Disabled="!Game.CanUndo" OnClick="Undo" aria-label="元に戻す" />
-        <MudIconButton Icon="@Icons.Material.Filled.Redo" Color="Color.Inherit" Disabled="!Game.CanRedo" OnClick="Redo" aria-label="やり直す" />
+        @* 隣の「始め直す」と矢印の形が似ているので、何のボタンかを文字でも書く *@
+        <MudButton Color="Color.Inherit" Disabled="!Game.CanUndo" OnClick="Undo" Class="appbar-labeled" aria-label="元に戻す">
+            <MudIcon Icon="@Icons.Material.Filled.Undo" /><span>戻す</span>
+        </MudButton>
+        <MudButton Color="Color.Inherit" Disabled="!Game.CanRedo" OnClick="Redo" Class="appbar-labeled" aria-label="やり直す">
+            <MudIcon Icon="@Icons.Material.Filled.Redo" /><span>やり直す</span>
+        </MudButton>
         <MudIconButton Icon="@Icons.Material.Filled.RestartAlt" Color="Color.Inherit" OnClick="OpenRestart" aria-label="始め直す" />
         <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Inherit" OnClick="OpenSettings" aria-label="設定" />
     </MudAppBar>
