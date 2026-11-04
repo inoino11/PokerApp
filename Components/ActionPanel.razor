@@ -13,9 +13,13 @@
             @foreach (var pct in Percents)
             {
                 var to = GameEngine.PotPercentTo(State, Seat, Player, pct);
-                <button type="button" class="pct-btn @(to == _to ? "pct-on" : "")" disabled="@(to <= Hand.CurrentBet)" @onclick="() => _to = to">@pct%</button>
+                <button type="button" class="pct-btn @(to == _to ? "pct-on" : "")" disabled="@(to <= Hand.CurrentBet)" @onclick="() => _to = to">
+                    @pct%<span class="pct-amount">@Chips.Format(to)</span>
+                </button>
             }
-            <button type="button" class="pct-btn @(_to == MaxTo ? "pct-on" : "")" @onclick="() => _to = MaxTo">Max</button>
+            <button type="button" class="pct-btn @(_to == MaxTo ? "pct-on" : "")" @onclick="() => _to = MaxTo">
+                Max<span class="pct-amount">@Chips.Format(MaxTo)</span>
+            </button>
         </div>
 
         <div class="sizer">
@@ -94,7 +98,7 @@
     private long MaxTo => GameEngine.MaxTo(Seat, Player);
     private bool CanRaise => MaxTo > Hand.CurrentBet && Player.Stack > CallAmount;
     private bool BelowMin => _to < MinTo && _to < MaxTo;
-    private long Step => Math.Max(1, Hand.Blinds.Bb);
+    private long Step => GameEngine.ChipUnit(State);
     private string BetWord => Hand.CurrentBet == 0 ? "Bet" : "Raise to";
 
     protected override void OnParametersSet()
@@ -131,7 +135,7 @@
     private void Nudge(int dir)
     {
         var floor = Math.Min(Hand.CurrentBet + GameEngine.ChipUnit(State), MaxTo);
-        // 1BB の倍数にそろえながら動かす
+        // 最小チップ単位（初期値は SB）の倍数にそろえながら動かす
         var next = dir > 0 ? (_to / Step + 1) * Step : (_to - 1) / Step * Step;
         _to = Math.Clamp(next, floor, MaxTo);
     }

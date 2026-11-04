@@ -77,14 +77,28 @@
     gap: 4px;
 }
 
+/* 押したときの額を下に薄く添え、押す前に額が分かるようにする */
 .pct-btn {
-    height: 38px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    padding: 0 2px;
+    line-height: 1.1;
     border: 1px solid var(--mud-palette-lines-inputs);
     border-radius: 8px;
     background: transparent;
     color: var(--mud-palette-text-primary);
     font-weight: 600;
     font-size: 0.85rem;
+}
+
+.pct-amount {
+    font-size: 0.65rem;
+    font-weight: 400;
+    opacity: 0.65;
+    white-space: nowrap;
 }
 
 .pct-btn:disabled {
