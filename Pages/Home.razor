@@ -131,9 +131,8 @@
             if (await Clock.TickAsync(S.Settings))
             {
                 await Device.NotifyLevelUpAsync();
-                var level = Clock.Level(S.Settings);
-                Snackbar.Add($"Lv{Clock.LevelIndex(S.Settings) + 1}（{Chips.Format(EffectiveLevel(level))}）に上がりました"
-                    + (S.Hand is null ? "" : "（次のハンドから）"), Severity.Info);
+                var text = $"Lv{Clock.LevelIndex(S.Settings) + 1}（{Chips.Format(EffectiveLevel(Clock.Level(S.Settings)))}）";
+                Snackbar.Add(@<span>ブラインドアップ<br />@text</span>, Severity.Info);
             }
             StateHasChanged();
         }
@@ -231,7 +230,6 @@
         _seatMode = false;
         await Execute(command);
         await Clock.ResetAsync();
-        Snackbar.Add(command.KeepPlayers ? "同じメンバーで始め直しました" : "全部消して始め直しました", Severity.Success);
     }
 
     public async ValueTask DisposeAsync()
