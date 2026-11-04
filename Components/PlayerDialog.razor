@@ -33,18 +33,18 @@
             @if (Player.Status == PlayerStatus.SittingOut)
             {
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="Player.Stack <= 0"
-                           OnClick="() => Close(new SetStatus(Player.Id, PlayerStatus.Active))">着席に戻る</MudButton>
+                           OnClick="() => Close(new SetStatus(Player.Id, PlayerStatus.Active))">着席</MudButton>
             }
             else
             {
                 <MudButton Variant="Variant.Outlined" Disabled="InPot" OnClick="() => Close(new SetStatus(Player.Id, PlayerStatus.SittingOut))">一時離席</MudButton>
             }
             <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="InPot"
-                       OnClick="() => Close(new SetStatus(Player.Id, PlayerStatus.Left))">退席する</MudButton>
+                       OnClick="() => Close(new SetStatus(Player.Id, PlayerStatus.Left))">退席</MudButton>
         </div>
         @if (InPot)
         {
-            <div class="dlg-note">ポットにチップを出しているので、このハンドが終わるまで抜けられません</div>
+            <div class="dlg-note">ポットに参加中のため、このハンドが終わるまで抜けられません</div>
         }
     </DialogContent>
     <DialogActions>
