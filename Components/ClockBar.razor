@@ -37,8 +37,8 @@
                 </span>
             </ActivatorContent>
             <ChildContent>
-                <MudMenuItem Icon="@Icons.Material.Filled.Add" OnClick="() => OnMinutesDelta.InvokeAsync(1)">残り時間 +1 分</MudMenuItem>
-                <MudMenuItem Icon="@Icons.Material.Filled.Remove" OnClick="() => OnMinutesDelta.InvokeAsync(-1)">残り時間 −1 分</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.Add" OnClick="() => OnMinutesDelta.InvokeAsync(1)">+1分</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.Remove" OnClick="() => OnMinutesDelta.InvokeAsync(-1)">-1分</MudMenuItem>
             </ChildContent>
         </MudMenu>
         <MudIconButton Icon="@(Running ? Icons.Material.Filled.Pause : Icons.Material.Filled.PlayArrow)"
