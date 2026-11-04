@@ -33,7 +33,7 @@
 
     <ClockBar LevelIndex="Clock.LevelIndex(S.Settings)" Level="Clock.Level(S.Settings)" IsLastLevel="Clock.IsLastLevel(S.Settings)"
               ShowClock="S.Settings.LevelMinutes > 0" Running="Clock.Running" Remaining="Clock.Remaining(S.Settings)"
-              NextHandLevel="@(S.Hand is not null && S.Hand.Blinds != EffectiveLevel(Clock.Level(S.Settings)))"
+              NextHandLevel="@(S.Hand is not null && S.Hand.Blinds != EffectiveLevel(Clock.Level(S.Settings)))" NextLevel="UpcomingLevel()"
               OnToggle="ToggleClock" OnLevelDelta="ChangeLevel" OnMinutesDelta="AddMinutes" />
 
     @* --- 席 --- *@
@@ -152,6 +152,10 @@
 
     // トリプルブラインドを使わない設定なら 3 番目の額は表示しない
     private BlindLevel EffectiveLevel(BlindLevel level) => S.Settings.TripleBlind ? level : level with { Third = 0 };
+
+    // 固定（0 分）や最終レベルでは、時間で上がる先がないので出さない
+    private BlindLevel? UpcomingLevel() =>
+        S.Settings.LevelMinutes <= 0 || Clock.IsLastLevel(S.Settings) ? null : EffectiveLevel(S.Settings.Levels[Clock.LevelIndex(S.Settings) + 1]);
 
     private static int BoardCards(Street street) => street switch
     {

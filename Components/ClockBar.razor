@@ -13,6 +13,11 @@
         {
             <span class="clock-next">次のハンドから</span>
         }
+        else if (NextLevel is not null)
+        {
+            @* 「次のハンドから」と同じ 2 行目に出す。両方出すと帯が高くなるので、そちらがあるときは出さない *@
+            <span class="clock-upcoming">Next @Chips.Format(NextLevel)</span>
+        }
     </div>
     <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" Class="clock-step" Disabled="IsLastLevel"
                    OnClick="() => OnLevelDelta.InvokeAsync(1)" aria-label="レベルを上げる" />
@@ -50,6 +55,7 @@
     [Parameter] public bool Running { get; set; }
     [Parameter] public TimeSpan Remaining { get; set; }
     [Parameter] public bool NextHandLevel { get; set; }  // 進行中のハンドとレベルが違う
+    [Parameter] public BlindLevel? NextLevel { get; set; }  // 時間で上がる次のレベル。null なら出さない
     [Parameter] public EventCallback OnToggle { get; set; }
     [Parameter] public EventCallback<int> OnLevelDelta { get; set; }
     [Parameter] public EventCallback<int> OnMinutesDelta { get; set; }

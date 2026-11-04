@@ -28,6 +28,11 @@
     color: var(--mud-palette-warning);
 }
 
+.clock-upcoming {
+    font-size: 0.7rem;
+    color: var(--mud-palette-text-secondary);
+}
+
 /* 矢印はレベルの表示に寄せ、帯の左端は少し詰める */
 .clock-bar ::deep .clock-step {
     margin: 0 -6px;
