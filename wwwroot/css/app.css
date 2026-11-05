@@ -45,6 +45,14 @@ button {
     margin: 0 auto;
 }
 
+.error-panel .chipmunk {
+    display: block;
+    width: 72px;
+    height: 76px;
+    margin-bottom: 12px;
+    color: var(--mud-palette-primary);
+}
+
 /* --- 起動中の表示 --- */
 #app-loading {
     position: fixed;

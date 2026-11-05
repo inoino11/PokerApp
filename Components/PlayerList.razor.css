@@ -150,6 +150,15 @@
     gap: 6px;
 }
 
+/* 絵は子部品（ChipmunkMark）の中なので ::deep で届かせる */
+.empty-table ::deep .chipmunk {
+    display: block;
+    width: 96px;
+    height: 101px;
+    margin: 40px auto 0;
+    color: var(--mud-palette-text-disabled);
+}
+
 .seat-hint {
     flex: 1;
     font-size: 0.85rem;

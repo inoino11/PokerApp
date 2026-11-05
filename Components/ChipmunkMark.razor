@@ -1,0 +1,25 @@
+@* シマリスの絵（飾り）。形は docs/icon/icon.svg のシマリスから取った。
+   色は置く場所の文字色（currentColor）に従う。文字色が半透明でも重なりが濃くならないよう、形は切り抜きに使い、色は 1 枚の四角で塗る。
+   目と背の線も切り抜くので、背景の色を選ばない *@
+<svg class="chipmunk @Class" viewBox="-42 -50 110 116" aria-hidden="true" focusable="false">
+    <defs>
+        <mask id="chipmunk-shape">
+            <g fill="#fff">
+                <path d="M14,48 C46,40 48,4 32,-14 C22,-26 34,-34 42,-24" fill="none" stroke="#fff" stroke-width="22" stroke-linecap="round" />
+                <ellipse cx="-2" cy="28" rx="24" ry="28" />
+                <ellipse cx="-8" cy="-24" rx="5" ry="9" />
+                <circle cx="-14" cy="-6" r="17" />
+                <circle cx="-28" cy="0" r="9" />
+                <circle cx="-16" cy="5" r="13" />
+                <ellipse cx="-4" cy="55" rx="20" ry="5" />
+            </g>
+            <circle cx="-19" cy="-10" r="3.2" fill="#000" />
+            <path d="M-4,10 C8,16 14,30 12,44" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" />
+        </mask>
+    </defs>
+    <rect x="-42" y="-50" width="110" height="116" fill="currentColor" mask="url(#chipmunk-shape)" />
+</svg>
+
+@code {
+    [Parameter] public string? Class { get; set; }
+}
