@@ -60,8 +60,8 @@ public sealed class PresetService(ILocalStorageService storage)
     public async Task<string?> SaveAsync(BlindPreset preset)
     {
         var name = preset.Name.Trim();
-        if (name.Length == 0) return "名前を入れてください";
-        if (Builtins.Any(b => b.Name == name)) return "組み込みのプリセットと同じ名前は使えません";
+        if (name.Length == 0) return "名前が未入力";
+        if (Builtins.Any(b => b.Name == name)) return "組み込みのプリセットと同じ名前は使えない";
         preset = preset with { Name = name, Builtin = false };
         _user = _user.RemoveAll(p => p.Name == name).Add(preset);
         await PersistAsync();
