@@ -198,9 +198,42 @@ window.appDevice = {
         this._beep(0, 660);
     },
 
+    // iOS はタップの流れの中で作るか再開した AudioContext でないと鳴らさない。裏から戻ると止まる（interrupted）ので、
+    // タップのたびに再開しておき、時計の処理から鳴らすときに使えるようにする
+    _initAudio() {
+        const unlock = () => this._unlock();
+        document.addEventListener('pointerdown', unlock, true);
+        document.addEventListener('touchend', unlock, true);
+    },
+
+    _context() {
+        if (!this._audio) {
+            // 'ambient' は他のアプリの音と混ぜて鳴らす種類。既定のままだと、流している音楽を止めることがある
+            try { if (navigator.audioSession) navigator.audioSession.type = 'ambient'; } catch { }
+            this._audio = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        return this._audio;
+    },
+
+    _unlock() {
+        try {
+            const ctx = this._context();
+            if (ctx.state !== 'running') ctx.resume().catch(() => { });
+            // 古い iOS は、タップの中で一度何かを鳴らさないと使えるようにならないので、無音を一瞬鳴らす
+            if (!this._primed) {
+                this._primed = true;
+                const src = ctx.createBufferSource();
+                src.buffer = ctx.createBuffer(1, 1, 22050);
+                src.connect(ctx.destination);
+                src.start(0);
+            }
+        } catch { }
+    },
+
     _beep(t, f) {
         try {
-            const ctx = this._audio ??= new (window.AudioContext || window.webkitAudioContext)();
+            const ctx = this._context();
+            if (ctx.state !== 'running') ctx.resume().catch(() => { });
             const o = ctx.createOscillator();
             const g = ctx.createGain();
             o.frequency.value = f;
@@ -216,3 +249,4 @@ window.appDevice = {
         document.querySelector('.row-to-act')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     },
 };
+appDevice._initAudio();
