@@ -14,6 +14,9 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.PositionClass = MudBlazor.Defaults.Classes.Position.TopCenter;
     config.SnackbarConfiguration.VisibleStateDuration = 2500;
     config.SnackbarConfiguration.PreventDuplicates = false;
+    // 初期値（2 秒）だと ✖ を押しても消えないように見え、見えない通知が上の帯のボタンを 2 秒ふさぐ
+    config.SnackbarConfiguration.ShowTransitionDuration = 200;
+    config.SnackbarConfiguration.HideTransitionDuration = 200;
 });
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddSingleton(TimeProvider.System);

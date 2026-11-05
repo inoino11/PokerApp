@@ -14,6 +14,14 @@ body {
     touch-action: manipulation;
 }
 
+/* 通知はどの向きへのスワイプでも消すので、上で縦に動かしても画面をスクロールさせない（動きは js/app.js の snackbarGesture） */
+.mud-snackbar-provider .mud-snackbar,
+.mud-snackbar-provider .mud-snackbar * {
+    touch-action: none;
+    cursor: pointer;
+    user-select: none;
+}
+
 button {
     font-family: inherit;
     cursor: pointer;

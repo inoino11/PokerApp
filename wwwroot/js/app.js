@@ -92,6 +92,74 @@ window.seatDrag = {
     },
 };
 
+// 通知（MudBlazor の Snackbar）を、タップかどの向きへのスワイプでも消す。
+// 閉じるのは通知の ✖ を JS から押して MudBlazor に任せる（表示中の一覧とずれないように）。
+// MudBlazor は描き直すたびに style 属性を書き換えるので、動きは style ではなく Web Animations で付ける
+window.snackbarGesture = {
+    _drag: null,
+
+    init() {
+        document.addEventListener('pointerdown', e => this._down(e));
+        document.addEventListener('pointermove', e => this._move(e));
+        document.addEventListener('pointerup', e => this._up(e));
+        document.addEventListener('pointercancel', () => this._reset());
+        // ✖ をタップしたときは、こちらで閉じたあとに本物のクリックも届くので、二重に閉じないよう止める
+        window.addEventListener('click', e => {
+            if (e.isTrusted && e.target.closest?.('.mud-snackbar[data-closing]')) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+            }
+        }, true);
+    },
+
+    _down(e) {
+        const el = e.target.closest?.('.mud-snackbar');
+        if (!el || el.dataset.closing) return;
+        // マウスで動かしたときに、周りの文字が選ばれたりブラウザ自身のドラッグ（pointercancel になる）が始まったりしないように
+        e.preventDefault();
+        this._reset();
+        const anim = el.animate([{ transform: 'none' }], { duration: 0, fill: 'forwards' });
+        this._drag = { el, anim, id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, dy: 0 };
+    },
+
+    _move(e) {
+        const d = this._drag;
+        if (!d || e.pointerId !== d.id) return;
+        d.dx = e.clientX - d.x;
+        d.dy = e.clientY - d.y;
+        d.anim.effect.setKeyframes([this._frame(d.dx, d.dy)]);
+    },
+
+    _up(e) {
+        const d = this._drag;
+        if (!d || e.pointerId !== d.id) return;
+        this._drag = null;
+        const dist = Math.hypot(d.dx, d.dy);
+        if (dist >= 8 && dist < 50) {  // 少し動かしただけなら元の位置に戻す
+            d.anim.cancel();
+            return;
+        }
+        if (dist >= 50) {
+            const k = 400 / dist;  // 動かした向きへ画面の外まで流す
+            d.el.animate([this._frame(d.dx, d.dy), { transform: `translate(${d.dx * k}px, ${d.dy * k}px)`, opacity: 0 }],
+                { duration: 150, fill: 'forwards' });
+            d.anim.cancel();
+        }
+        d.el.dataset.closing = '1';
+        d.el.querySelector('.mud-snackbar-close-button')?.click();
+    },
+
+    _frame(dx, dy) {
+        return { transform: `translate(${dx}px, ${dy}px)`, opacity: Math.max(0.3, 1 - Math.hypot(dx, dy) / 200) };
+    },
+
+    _reset() {
+        this._drag?.anim.cancel();
+        this._drag = null;
+    },
+};
+snackbarGesture.init();
+
 // 端末の機能（画面を消さない・通知音・手番へのスクロール）
 window.appDevice = {
     _lock: null,
