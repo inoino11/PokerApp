@@ -7,16 +7,13 @@
             <div>
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
                            OnClick="() => Close(true)">同じメンバーで始め直す</MudButton>
-                <MudText Typo="Typo.caption" Class="d-block mt-1">名前と席はそのまま、全員を @Chips.Format(StartingStack) に戻す</MudText>
+                <MudText Typo="Typo.caption" Class="d-block mt-1">プレイヤーはそのままで全員を @Chips.Format(StartingStack) に戻す</MudText>
             </div>
             <div>
                 <MudButton Variant="Variant.Outlined" Color="Color.Error" FullWidth="true"
                            OnClick="() => Close(false)">全部消して始める</MudButton>
-                <MudText Typo="Typo.caption" Class="d-block mt-1">プレイヤーも消す。設定とプリセットは残る。</MudText>
+                <MudText Typo="Typo.caption" Class="d-block mt-1">プレイヤーを初期化してブラインド設定のみ残す</MudText>
             </div>
-            <MudText Typo="Typo.caption" Class="d-block">
-                どちらも上の「戻す」で戻せる（時計は Lv1 に戻ったまま）。ゲームの状態はこの端末にだけ一時的に保存される。
-            </MudText>
         </div>
     </DialogContent>
     <DialogActions>

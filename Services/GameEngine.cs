@@ -22,7 +22,7 @@ public static class GameEngine
         SetStatus c => SetStatus(s, c),
         // MovePlayer は旧版の履歴を読むためだけに残しているので、ハンド中の制限はかけない
         MovePlayer c => Seat(s, c.PlayerId, s.Seated.ToList().FindIndex(p => p.Id == c.PlayerId) + Math.Sign(c.Direction)),
-        SeatPlayer c => s.Hand is null ? Seat(s, c.PlayerId, c.ToIndex) : throw new InvalidOperationException("席替えはハンドの合間のみ"),
+        SeatPlayer c => s.Hand is null ? Seat(s, c.PlayerId, c.ToIndex) : throw new InvalidOperationException("ハンドの合間のみ席替え可能"),
         ChooseButton c => ChooseButton(s, c),
         RestartGame c => Restart(s, c),
         StartHand c => StartHand(s, c),

@@ -143,7 +143,7 @@
             Snackbar.Add(error, Severity.Warning);
             return;
         }
-        Snackbar.Add($"「{_saveName.Trim()}」を保存", Severity.Success);
+        Snackbar.Add($"「{_saveName.Trim()}」の保存完了", Severity.Success);
         _presetName = _saveName.Trim();
         _saveName = "";
     }
@@ -160,7 +160,7 @@
     {
         if (_levels.Any(l => l.Bb <= 0 || l.Sb < 0 || l.Third < 0))
         {
-            Snackbar.Add("BB は 1 以上、SB と 3rd は 0 以上で入力", Severity.Warning);
+            Snackbar.Add("BB は 1 以上、SB と 3rd は 0 以上必要", Severity.Warning);
             return;
         }
         if (_levels.Count == 0) return;

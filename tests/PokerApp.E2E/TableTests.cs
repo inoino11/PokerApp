@@ -156,7 +156,7 @@ public class TableTests(AppFixture app)
 
             await page.GetByText("ディール開始").ClickAsync();
             await page.GetByRole(AriaRole.Button, new() { Name = "席替え" }).ClickAsync();
-            await Assertions.Expect(page.GetByText("席替えはハンドの合間のみ")).ToBeVisibleAsync();
+            await Assertions.Expect(page.GetByText("ハンドの合間のみ席替え可能")).ToBeVisibleAsync();
             await Assertions.Expect(page.Locator(".seat-handle")).ToHaveCountAsync(0);
 
             await page.GetByRole(AriaRole.Button, new() { Name = "Fold", Exact = true }).ClickAsync();
