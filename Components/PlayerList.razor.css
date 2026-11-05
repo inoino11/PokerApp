@@ -59,6 +59,36 @@
     color: var(--mud-palette-surface);
 }
 
+.allin-card {
+    display: inline-block;
+    height: 24px;
+    margin: -2px 4px -3px 0;
+}
+
+.allin-card svg {
+    display: block;
+    height: 100%;
+}
+
+/* 角を丸めるため、塗りと同じ色の太い線で縁取る。札の色はライト・ダークで変えない（実物の札と同じ赤と黒） */
+.allin-edge {
+    fill: #e53935;
+    stroke: #e53935;
+    stroke-width: 10;
+    stroke-linejoin: round;
+}
+
+.allin-face {
+    fill: #111;
+    stroke: #111;
+    stroke-width: 4;
+    stroke-linejoin: round;
+}
+
+.allin-acorn {
+    fill: #fff;
+}
+
 .player-state {
     display: flex;
     align-items: center;
