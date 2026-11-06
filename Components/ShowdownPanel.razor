@@ -1,14 +1,14 @@
-@* ショーダウンで 1 つのポットの勝者を選ぶ。複数選べばチョップ *@
+@* ショーダウンで 1 つのポットの勝者を選ぶ。複数選べばチョップ。Run it のときは回ごとに選ぶ *@
 <div class="showdown-panel">
     <div class="showdown-title">
-        @(PotIndex == 0 ? "Main pot" : "Side pot")
-        <span class="showdown-amount">@Chips.Format(Pot.Amount)</span>
+        @Label(Current)
+        <span class="showdown-amount">@Chips.Format(Current.Amount)</span>
         の勝者
     </div>
     @* ポットは 1 つずつ決めるので、全体でいくつあるかが分かるように、このあと決めるポットを出す *@
     @if (LaterPots.Count > 0)
     {
-        <div class="showdown-later">このあと: @string.Join(" / ", LaterPots.Select(p => $"Side pot {Chips.Format(p.Amount)}"))</div>
+        <div class="showdown-later">このあと: @string.Join(" / ", LaterPots.Select(p => $"{Label(p)} {Chips.Format(p.Amount)}"))</div>
     }
     <div class="showdown-players">
         @foreach (var p in State.Players.Where(p => Pot.EligibleIds.Contains(p.Id)))
@@ -28,20 +28,24 @@
 
 @code {
     [Parameter, EditorRequired] public GameState State { get; set; } = default!;
-    [Parameter] public int PotIndex { get; set; }
-    [Parameter, EditorRequired] public Pot Pot { get; set; } = default!;
-    [Parameter] public IReadOnlyList<Pot> LaterPots { get; set; } = [];
+    [Parameter, EditorRequired] public GameEngine.PendingShowdown Current { get; set; }
+    [Parameter] public int Runs { get; set; } = 1;
+    [Parameter] public IReadOnlyList<GameEngine.PendingShowdown> LaterPots { get; set; } = [];
     [Parameter] public EventCallback<ImmutableList<int>> OnConfirm { get; set; }
 
+    private Pot Pot => Current.Pot;
     private readonly HashSet<int> _selected = [];
-    private int _lastPot = -1;
+    private (int, int) _lastPot = (-1, -1);
 
     protected override void OnParametersSet()
     {
-        if (_lastPot == PotIndex) return;
-        _lastPot = PotIndex;
+        if (_lastPot == (Current.Run, Current.Index)) return;
+        _lastPot = (Current.Run, Current.Index);
         _selected.Clear();
     }
+
+    private string Label(GameEngine.PendingShowdown p) =>
+        (Runs > 1 ? $"{p.Run + 1} 回目 " : "") + (p.Index == 0 ? "Main pot" : "Side pot");
 
     private void Toggle(int id)
     {

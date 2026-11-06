@@ -43,7 +43,7 @@
     </div>
 
     @* --- ポット（席替え中は一覧を広く使うため、ポットと操作を隠す。勝者を選ぶ間は、パネルの見出しにポットの額が出るので隠す） --- *@
-    @if (!_seatMode && S.Hand is { } hand && GameEngine.PendingPot(hand) is null)
+    @if (!_seatMode && S.Hand is { } hand && GameEngine.PendingPot(S) is null && !GameEngine.RunsPending(hand))
     {
         var street = $"street-{hand.Street.ToString().ToLowerInvariant()}";
         <div class="pot-bar">
@@ -64,11 +64,15 @@
     <div class="table-controls @(_seatMode ? "d-none" : "") @(_locked ? "input-lock" : "")">
         @if (S.Hand is null)
         {
-            <IdlePanel State="S" NextLevel="EffectiveLevel(Clock.Level(S.Settings))" OnStart="StartHand" />
+            <IdlePanel State="S" NextLevel="EffectiveLevel(Clock.Level(S.Settings))" OnStart="StartHand" OnSevenDeuce="OpenSevenDeuce" />
         }
-        else if (GameEngine.PendingPot(S.Hand) is { } pending)
+        else if (GameEngine.RunsPending(S.Hand))
         {
-            <ShowdownPanel State="S" PotIndex="pending.Index" Pot="pending.Pot" LaterPots="GameEngine.Pots(S.Hand).Skip(pending.Index + 1).ToList()" OnConfirm="ChooseWinners" />
+            <RunsPanel PotTotal="GameEngine.PotTotal(S.Hand)" MaxRuns="S.Settings.MaxRuns" OnChoose="ChooseRuns" />
+        }
+        else if (GameEngine.PendingPot(S) is { } pending)
+        {
+            <ShowdownPanel State="S" Current="pending" Runs="GameEngine.RunCount(S.Hand)" LaterPots="GameEngine.LaterPots(S).ToList()" OnConfirm="ChooseWinners" />
         }
         else if (S.Hand.ToActId is not null)
         {
@@ -208,6 +212,8 @@
 
     private Task ChooseWinners(ImmutableList<int> ids) => Advance(new ChooseWinners(ids));
 
+    private Task ChooseRuns(int count) => Advance(new ChooseRuns(count));
+
     private async Task StartHand()
     {
         await Clock.TickAsync(S.Settings);
@@ -232,6 +238,14 @@
         var dialog = await Dialogs.ShowAsync<PlayerDialog>(null, parameters, new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, FullWidth = true });
         var result = await dialog.Result;
         if (result is { Canceled: false, Data: GameCommand command }) await Execute(command);
+    }
+
+    private async Task OpenSevenDeuce()
+    {
+        var parameters = new DialogParameters<SevenDeuceDialog> { { x => x.State, S } };
+        var dialog = await Dialogs.ShowAsync<SevenDeuceDialog>(null, parameters, new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: int id }) await Execute(new ClaimSevenDeuce(id));
     }
 
     private async Task OpenSettings()

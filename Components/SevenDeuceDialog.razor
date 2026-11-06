@@ -1,0 +1,41 @@
+@* 72o のボーナスを受け取る人を選ぶ。選べるのは前のハンドでポットを取った人だけ。1 人しかいなくても選ばせる（押し間違いですぐ払わせないため）。
+   結果は受け取る人の Id で返す *@
+<MudDialog>
+    <TitleContent>72o を受け取る人</TitleContent>
+    <DialogContent>
+        <div class="sd-players">
+            @foreach (var (p, amount) in Candidates)
+            {
+                var id = p.Id;
+                <button type="button" class="sd-btn @(_selected == id ? "sd-on" : "")" @onclick="() => _selected = id">
+                    <span class="sd-color" style="background:@Chips.PlayerColors[p.ColorIndex % Chips.PlayerColors.Length]"></span>
+                    <span class="sd-name">@p.Name</span>
+                    <span class="sd-amount">1 人 @Chips.Format(amount)</span>
+                </button>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">キャンセル</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_selected is null" OnClick="Confirm">確定</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] public IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public GameState State { get; set; } = default!;
+
+    private int? _selected;
+
+    // Run it で取った回が少ない人は額が減るので、人ごとに 1 人あたりの額を添える
+    private IEnumerable<(Player Player, long Amount)> Candidates =>
+        State.LastResult is not { } result ? []
+        : result.Players.Where(r => r.RunsWon > 0)
+            .Select(r => (Player: State.GetPlayer(r.PlayerId), Amount: GameEngine.SevenDeuceAmount(State, result, r)))
+            .Where(x => x.Player.Status != PlayerStatus.Left);
+
+    private void Confirm()
+    {
+        if (_selected is int id) MudDialog.Close(DialogResult.Ok(id));
+    }
+}

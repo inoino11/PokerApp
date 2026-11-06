@@ -80,6 +80,18 @@
             </div>
         }
 
+        @* --- ハウスルール（プリセットには入れない） --- *@
+        <MudText Typo="Typo.subtitle2" Class="mt-4 mb-1">ハウスルール</MudText>
+        <div class="house-rules">
+            <MudSelect T="int" @bind-Value="_maxRuns" Label="Run it" Variant="Variant.Outlined" Margin="Margin.Dense">
+                <MudSelectItem Value="1">なし</MudSelectItem>
+                <MudSelectItem Value="2">Twice まで</MudSelectItem>
+                <MudSelectItem Value="3">Thrice まで</MudSelectItem>
+            </MudSelect>
+            <MudNumericField @bind-Value="_sevenDeuceBb" Label="72o（BB）" HelperText="0 なら使わない" Min="0" Max="100"
+                             Variant="Variant.Outlined" Margin="Margin.Dense" />
+        </div>
+
         <MudDivider Class="my-3" />
 
         <MudText Typo="Typo.caption" Class="d-block">@AppInfo.DisplayName @AppInfo.Version</MudText>
@@ -101,6 +113,8 @@
     private bool _roundBets;
     private bool _autoUnit;
     private long _unit;
+    private int _maxRuns = 1;
+    private int _sevenDeuceBb;
     private string? _presetName;
     private string _saveName = "";
 
@@ -117,10 +131,13 @@
         _roundBets = s.RoundBets;
         _autoUnit = s.ChipUnit is null;
         _unit = s.ChipUnit ?? s.Levels[0].Sb;
+        _maxRuns = Math.Clamp(s.MaxRuns, 1, 3);
+        _sevenDeuceBb = s.SevenDeuceBb;
     }
 
     private GameSettings Build() => new(
-        [.. _levels], _minutes, _triple, _startingStack, _autoUnit ? null : Math.Max(1, _unit), _roundBets);
+        [.. _levels], _minutes, _triple, _startingStack, _autoUnit ? null : Math.Max(1, _unit), _roundBets,
+        Math.Max(0, _sevenDeuceBb), _maxRuns);
 
     private static long ParseChips(ChangeEventArgs e) => long.TryParse(e.Value?.ToString(), out var v) ? Math.Max(0, v) : 0;
 

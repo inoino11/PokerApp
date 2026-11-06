@@ -109,3 +109,11 @@
     width: 140px;
     margin-left: 58px;
 }
+
+/* 2 つの欄を横に並べる（狭い幅でも 1 行に収まる短い欄） */
+.house-rules {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    align-items: start;
+}

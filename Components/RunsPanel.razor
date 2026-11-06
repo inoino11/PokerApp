@@ -1,0 +1,18 @@
+@* オールインで決着したあと、残りのカードを何回配るかを選ぶ（Run it Twice / Thrice）。回数は卓でオールインした人どうしが決める *@
+<div class="runs-panel">
+    <div class="runs-title">Run it <span class="runs-pot">@Chips.Format(PotTotal)</span></div>
+    <div class="runs-row">
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" Class="runs-btn" OnClick="() => OnChoose.InvokeAsync(1)">Once</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="runs-btn" OnClick="() => OnChoose.InvokeAsync(2)">Twice</MudButton>
+        @if (MaxRuns >= 3)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="runs-btn" OnClick="() => OnChoose.InvokeAsync(3)">Thrice</MudButton>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public long PotTotal { get; set; }
+    [Parameter] public int MaxRuns { get; set; } = 2;
+    [Parameter] public EventCallback<int> OnChoose { get; set; }
+}

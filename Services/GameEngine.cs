@@ -28,6 +28,8 @@ public static class GameEngine
         StartHand c => StartHand(s, c),
         Act c => Act(s, c),
         ChooseWinners c => ChooseWinners(s, c),
+        ChooseRuns c => ChooseRuns(s, c),
+        ClaimSevenDeuce c => ClaimSevenDeuce(s, c),
         UpdateSettings c => s with { Settings = Validate(c.Settings) },
         _ => throw new InvalidOperationException("不明な操作"),
     });
@@ -82,14 +84,72 @@ public static class GameEngine
         PotCalculator.BuildPots(PotCalculator.ReturnUncalled(Contributions(hand)).Contributions);
 
     /// <summary>
-    /// ショーダウンで次に勝者を選ぶポット。選ぶ必要がなければ null。
+    /// ショーダウンで次に勝者を選ぶポット。Run は何回目か（0 始まり）、Amount はその回の取り分。選ぶ必要がなければ null。
     /// </summary>
-    public static (int Index, Pot Pot)? PendingPot(HandState hand)
+    public static PendingShowdown? PendingPot(GameState s)
     {
-        if (hand.Street != Street.Showdown) return null;
+        var hand = s.Hand;
+        if (hand is not { Street: Street.Showdown } || RunsPending(hand)) return null;
         var pots = Pots(hand);
-        var (_, pending) = PotCalculator.ResolveWinners(pots, hand.WinnerTiers);
-        return pending is int i ? (i, pots[i]) : null;
+        var runs = RunCount(hand);
+        for (var r = 0; r < runs; r++)
+        {
+            var (_, pending) = PotCalculator.ResolveWinners(pots, Tiers(hand, r));
+            if (pending is int i) return new(r, i, pots[i], RunShare(pots[i].Amount, runs, r, SplitUnit(s)));
+        }
+        return null;
+    }
+
+    public readonly record struct PendingShowdown(int Run, int Index, Pot Pot, long Amount);
+
+    /// <summary>
+    /// 今選んでいるポットのあとに決めるポット（同じ回の残りと、そのあとの回の全部）。
+    /// </summary>
+    public static IEnumerable<PendingShowdown> LaterPots(GameState s)
+    {
+        if (PendingPot(s) is not { } now) yield break;
+        var pots = Pots(s.Hand!);
+        var runs = RunCount(s.Hand!);
+        for (var r = now.Run; r < runs; r++)
+            for (var i = r == now.Run ? now.Index + 1 : 0; i < pots.Count; i++)
+                yield return new(r, i, pots[i], RunShare(pots[i].Amount, runs, r, SplitUnit(s)));
+    }
+
+    /// <summary>
+    /// オールインのあと、残りのカードを何回配るかを選ぶ場面か。
+    /// </summary>
+    public static bool RunsPending(HandState hand) => hand.Street == Street.Showdown && hand.Runs == 0;
+
+    public static int RunCount(HandState hand) => hand.Runs is int r && r > 1 ? r : 1;
+
+    static IReadOnlyList<IReadOnlyList<int>> Tiers(HandState hand, int run) =>
+        RunCount(hand) == 1 ? hand.WinnerTiers : hand.RunTiers is { } t && run < t.Count ? t[run] : [];
+
+    /// <summary>
+    /// ポットを回数で分けたときの、run 回目の取り分。unit 単位で等分し、端数は 1 回目に足す。
+    /// </summary>
+    public static long RunShare(long amount, int runs, int run, long unit)
+    {
+        if (runs <= 1) return amount;
+        unit = Math.Max(1, unit);
+        var share = amount / runs / unit * unit;
+        return run == 0 ? amount - share * (runs - 1) : share;
+    }
+
+    // チョップや Run it で分けるときの単位。丸めを切っていれば 1 チップ単位で分ける
+    static long SplitUnit(GameState s) => s.Settings.RoundBets ? ChipUnit(s) : 1;
+
+    /// <summary>
+    /// 72o で 1 人が払う額。前のハンドの BB × 設定の BB 数を、Run it で取った回の割合で減らす（Twice で 1 回なら半分）。
+    /// </summary>
+    public static long SevenDeuceAmount(GameState s, HandResult result, PlayerResult winner)
+    {
+        var full = result.Bb * s.Settings.SevenDeuceBb;
+        if (winner.RunsWon >= result.Runs) return full;
+        var part = full * winner.RunsWon / Math.Max(1, result.Runs);
+        // 前のハンドの SB は残していないので、最小チップの設定がなければ BB の半分で丸める
+        var unit = s.Settings.ChipUnit ?? Math.Max(1, result.Bb / 2);
+        return s.Settings.RoundBets ? RoundToUnit(part, unit) : part;
     }
 
     public static IEnumerable<Player> Eligible(GameState s) =>
@@ -365,9 +425,12 @@ public static class GameEngine
             return s with { Hand = hand with { ToActId = NextNeedingAction(hand, cur < 0 ? hand.Seats.Count - 1 : cur) } };
         }
 
-        // ベットがそろった
+        // ベットがそろった。River より前にオールインで決着したら、残りのカードを何回配るかを選ばせる（Run it を使う設定のときだけ）
         if (canAct <= 1 || hand.Street == Street.River)
-            return TryFinish(s with { Hand = hand with { Street = Street.Showdown, ToActId = null } });
+        {
+            int? runs = canAct <= 1 && hand.Street < Street.River && s.Settings.MaxRuns > 1 ? 0 : null;
+            return TryFinish(s with { Hand = hand with { Street = Street.Showdown, ToActId = null, Runs = runs } });
+        }
 
         var next = hand with
         {
@@ -386,11 +449,27 @@ public static class GameEngine
     static GameState ChooseWinners(GameState s, ChooseWinners c)
     {
         var hand = s.Hand ?? throw new InvalidOperationException("ハンド未開始");
-        var pot = (PendingPot(hand) ?? throw new InvalidOperationException("勝者を選ぶポットなし")).Pot;
+        var pending = PendingPot(s) ?? throw new InvalidOperationException("勝者を選ぶポットなし");
         var ids = c.PlayerIds.Distinct().ToImmutableList();
-        if (ids.Count == 0 || ids.Any(id => !pot.EligibleIds.Contains(id)))
+        if (ids.Count == 0 || ids.Any(id => !pending.Pot.EligibleIds.Contains(id)))
             throw new InvalidOperationException("このポットの権利がない人を含む");
-        return TryFinish(s with { Hand = hand with { WinnerTiers = hand.WinnerTiers.Add(ids) } });
+        if (RunCount(hand) == 1) return TryFinish(s with { Hand = hand with { WinnerTiers = hand.WinnerTiers.Add(ids) } });
+        var runTiers = hand.RunTiers ?? EmptyRunTiers(RunCount(hand));
+        return TryFinish(s with { Hand = hand with { RunTiers = runTiers.SetItem(pending.Run, runTiers[pending.Run].Add(ids)) } });
+    }
+
+    static ImmutableList<ImmutableList<ImmutableList<int>>> EmptyRunTiers(int runs) =>
+        Enumerable.Repeat(ImmutableList<ImmutableList<int>>.Empty, runs).ToImmutableList();
+
+    static GameState ChooseRuns(GameState s, ChooseRuns c)
+    {
+        var hand = s.Hand ?? throw new InvalidOperationException("ハンド未開始");
+        if (!RunsPending(hand)) throw new InvalidOperationException("回数の選択不可");
+        if (c.Count < 1 || c.Count > Math.Max(1, s.Settings.MaxRuns)) throw new InvalidOperationException("回数が不正");
+        return TryFinish(s with
+        {
+            Hand = hand with { Runs = c.Count == 1 ? null : c.Count, RunTiers = c.Count == 1 ? null : EmptyRunTiers(c.Count) },
+        });
     }
 
     static ImmutableList<PotCalculator.Contribution> Contributions(HandState hand) =>
@@ -402,18 +481,30 @@ public static class GameEngine
     static GameState TryFinish(GameState s)
     {
         var hand = s.Hand!;
+        if (RunsPending(hand)) return s;
         var (contribs, returnTo, returnAmount) = PotCalculator.ReturnUncalled(Contributions(hand));
         var pots = PotCalculator.BuildPots(contribs);
-        var (winners, pending) = PotCalculator.ResolveWinners(pots, hand.WinnerTiers);
-        if (pending is not null) return s;
+        var runs = RunCount(hand);
+        var winnersByRun = new List<ImmutableList<ImmutableList<int>>>();
+        for (var r = 0; r < runs; r++)
+        {
+            var (winners, pending) = PotCalculator.ResolveWinners(pots, Tiers(hand, r));
+            if (pending is not null) return s;
+            winnersByRun.Add(winners);
+        }
 
         var seatOrder = hand.Seats.Select(x => x.PlayerId).ToList();
-        var unit = s.Settings.RoundBets ? ChipUnit(s) : 1;
+        var unit = SplitUnit(s);
         var won = seatOrder.ToDictionary(id => id, _ => 0L);
-        for (var i = 0; i < pots.Count; i++)
+        var runsWon = seatOrder.ToDictionary(id => id, _ => 0);
+        for (var r = 0; r < runs; r++)
         {
-            var ordered = seatOrder.Where(winners[i].Contains).ToList();
-            foreach (var (id, amount) in PotCalculator.Split(pots[i].Amount, ordered, unit)) won[id] += amount;
+            for (var i = 0; i < pots.Count; i++)
+            {
+                var ordered = seatOrder.Where(winnersByRun[r][i].Contains).ToList();
+                foreach (var (id, amount) in PotCalculator.Split(RunShare(pots[i].Amount, runs, r, unit), ordered, unit)) won[id] += amount;
+            }
+            foreach (var id in winnersByRun[r].SelectMany(w => w).Distinct()) runsWon[id]++;
         }
 
         var players = s.Players;
@@ -427,8 +518,8 @@ public static class GameEngine
         }
 
         var result = new HandResult(hand.Number, contribs
-            .Select(x => new PlayerResult(x.PlayerId, won[x.PlayerId], x.Amount))
-            .ToImmutableList());
+            .Select(x => new PlayerResult(x.PlayerId, won[x.PlayerId], x.Amount, runsWon[x.PlayerId]))
+            .ToImmutableList(), hand.Blinds.Bb, runs);
         return s with
         {
             Players = players,
@@ -439,6 +530,43 @@ public static class GameEngine
         };
     }
 
+    // --- 72o ---
+
+    // 払うのは前のハンドに配られた全員（降りた人も含む）。その後に退席した人は持ち帰ったので払わない。足りない人は手元の全部を払う
+    static GameState ClaimSevenDeuce(GameState s, ClaimSevenDeuce c)
+    {
+        if (s.Hand is not null) throw new InvalidOperationException("ハンドの合間のみ 72o 入力可能");
+        var result = s.LastResult ?? throw new InvalidOperationException("前のハンドなし");
+        if (s.Settings.SevenDeuceBb <= 0) throw new InvalidOperationException("72o ボーナス未設定");
+        if (result.Bb <= 0) throw new InvalidOperationException("このハンドは 72o 入力不可");
+        if (result.SevenDeuceId is not null) throw new InvalidOperationException("72o は入力済み");
+        var me = result.Players.FirstOrDefault(p => p.PlayerId == c.PlayerId);
+        if (me is not { RunsWon: > 0 }) throw new InvalidOperationException("72o の対象外");
+        if (s.GetPlayer(c.PlayerId).Status == PlayerStatus.Left) throw new InvalidOperationException("退席済み");
+
+        var amount = SevenDeuceAmount(s, result, me);
+        var paid = new Dictionary<int, long>();
+        foreach (var r in result.Players.Where(r => r.PlayerId != c.PlayerId))
+        {
+            var p = s.GetPlayer(r.PlayerId);
+            if (p.Status == PlayerStatus.Left) continue;
+            var pay = Math.Min(amount, p.Stack);
+            paid[p.Id] = pay;
+            var stack = p.Stack - pay;
+            s = UpdatePlayer(s, p.Id, x => x with
+            {
+                Stack = stack,
+                Status = stack == 0 && x.Status == PlayerStatus.Active ? PlayerStatus.SittingOut : x.Status,
+            });
+        }
+        var total = paid.Values.Sum();
+        s = UpdatePlayer(s, c.PlayerId, x => x with { Stack = x.Stack + total });
+        var players = result.Players
+            .Select(r => r with { Bonus = r.PlayerId == c.PlayerId ? total : -paid.GetValueOrDefault(r.PlayerId) })
+            .ToImmutableList();
+        return s with { LastResult = result with { Players = players, SevenDeuceId = c.PlayerId } };
+    }
+
     // --- 補助 ---
 
     static GameSettings Validate(GameSettings settings)
@@ -446,6 +574,8 @@ public static class GameEngine
         if (settings.Levels.Count == 0) throw new InvalidOperationException("ブラインドのレベル未設定");
         if (settings.Levels.Any(l => l.Sb < 0 || l.Bb <= 0 || l.Third < 0)) throw new InvalidOperationException("ブラインドの額が不正");
         if (settings.LevelMinutes < 0) throw new InvalidOperationException("レベルの時間が不正");
+        if (settings.SevenDeuceBb < 0) throw new InvalidOperationException("72o ボーナスが不正");
+        if (settings.MaxRuns is < 1 or > 3) throw new InvalidOperationException("Run it の回数が不正");
         return settings;
     }
 

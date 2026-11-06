@@ -2,7 +2,13 @@
 <div class="idle-panel">
     @if (State.LastResult is { } result)
     {
-        <div class="result-title">前回の結果</div>
+        <div class="result-head">
+            <span class="result-title">前回の結果</span>
+            @if (CanClaimSevenDeuce(result))
+            {
+                <button type="button" class="seven-deuce-btn" @onclick="OnSevenDeuce">72o</button>
+            }
+        </div>
         <div class="result-list">
             @foreach (var r in result.Players.Where(r => r.Net != 0).OrderByDescending(r => r.Net))
             {
@@ -11,6 +17,11 @@
                 </span>
             }
         </div>
+        @* 72o を入れたら、上の差し引きに含めたうえで、ボーナスの分を添える *@
+        @if (result.SevenDeuceId is int sd && result.Players.FirstOrDefault(r => r.PlayerId == sd) is { } bonus)
+        {
+            <div class="result-bonus">72o @State.GetPlayer(sd).Name +@Chips.Format(bonus.Bonus)</div>
+        }
     }
 
     @* 押せない理由はボタンの文言で伝える。参加できる人（着席中でチップがある人）が 2 人に満たない *@
@@ -24,6 +35,12 @@
     [Parameter, EditorRequired] public GameState State { get; set; } = default!;
     [Parameter, EditorRequired] public BlindLevel NextLevel { get; set; } = default!;
     [Parameter] public EventCallback OnStart { get; set; }
+    [Parameter] public EventCallback OnSevenDeuce { get; set; }
+
+    // 設定で使っていて、まだ入れておらず、受け取れる人（ポットを取って、退席していない人）がいるときだけ
+    private bool CanClaimSevenDeuce(HandResult result) =>
+        State.Settings.SevenDeuceBb > 0 && result.Bb > 0 && result.SevenDeuceId is null
+        && result.Players.Any(r => r.RunsWon > 0 && State.GetPlayer(r.PlayerId).Status != PlayerStatus.Left);
 
     private int EligibleCount => GameEngine.Eligible(State).Count();
 

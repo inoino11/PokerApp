@@ -4,7 +4,33 @@
     gap: 8px;
 }
 
+.result-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 28px;
+}
+
 .result-title {
+    font-size: 0.8rem;
+    color: var(--mud-palette-text-secondary);
+}
+
+/* 入れるのは 7-2 で取ったときだけなので、目立たせすぎず、右端に小さく置く */
+.seven-deuce-btn {
+    min-width: 48px;
+    height: 28px;
+    padding: 0 10px;
+    border: 1.5px solid var(--mud-palette-lines-inputs);
+    border-radius: 14px;
+    background: transparent;
+    color: var(--mud-palette-text-secondary);
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+.result-bonus {
+    margin-top: -4px;
     font-size: 0.8rem;
     color: var(--mud-palette-text-secondary);
 }

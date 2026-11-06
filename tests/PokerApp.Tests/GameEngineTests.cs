@@ -94,7 +94,7 @@ public class GameEngineTests
         var g = new TestGame(10000, 10000, 10000).Start().Call().Call().Check();
         for (var i = 0; i < 9; i++) g.Check();
         Assert.Equal(Street.Showdown, g.Hand.Street);
-        Assert.Equal(0, GameEngine.PendingPot(g.Hand)!.Value.Index);
+        Assert.Equal(0, GameEngine.PendingPot(g.State)!.Value.Index);
         g.Win(1);
         Assert.Null(g.State.Hand);
         Assert.Equal(10200, g.Stack(1));
@@ -111,7 +111,7 @@ public class GameEngineTests
         var pots = GameEngine.Pots(g.Hand);
         Assert.Equal([3000L, 4000L], pots.Select(p => p.Amount));
         g.Win(1);
-        var pending = GameEngine.PendingPot(g.Hand)!.Value;
+        var pending = GameEngine.PendingPot(g.State)!.Value;
         Assert.Equal(1, pending.Index);
         Assert.Equal([2, 3], pending.Pot.EligibleIds);
         g.Win(3);

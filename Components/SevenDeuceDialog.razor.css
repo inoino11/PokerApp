@@ -1,0 +1,46 @@
+.sd-players {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* 勝者を選ぶボタン（ShowdownPanel）と同じ見た目にし、右端に 1 人あたりの額を出す */
+.sd-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 48px;
+    padding: 0 12px 0 0;
+    overflow: hidden;
+    border: 2px solid var(--mud-palette-lines-inputs);
+    border-radius: 8px;
+    background: var(--mud-palette-surface);
+    color: var(--mud-palette-text-primary);
+    font-weight: 600;
+    text-align: left;
+}
+
+.sd-color {
+    align-self: stretch;
+    width: 6px;
+}
+
+.sd-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.sd-amount {
+    font-size: 0.8rem;
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+}
+
+.sd-on {
+    border-color: var(--mud-palette-primary);
+    background: var(--mud-palette-primary);
+    color: var(--mud-palette-primary-text);
+}

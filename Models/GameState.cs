@@ -22,6 +22,7 @@ public sealed record BlindLevel(long Sb, long Bb, long Third = 0);
 
 /// <summary>
 /// UNDO の対象になる設定。プリセットはここではなく PresetService が持つ。
+/// 後ろの 2 つはハウスルールで、古い保存データにはないので既定値で読む。
 /// </summary>
 public sealed record GameSettings(
     ImmutableList<BlindLevel> Levels,
@@ -29,7 +30,9 @@ public sealed record GameSettings(
     bool TripleBlind,
     long StartingStack,
     long? ChipUnit,            // null なら今のレベルの SB
-    bool RoundBets);
+    bool RoundBets,
+    int SevenDeuceBb = 0,      // 72o のボーナス（1 人あたり何 BB か）。0 なら使わない
+    int MaxRuns = 1);          // Run it の上限（1 なら使わない、2 なら Twice まで、3 なら Thrice まで）
 
 /// <summary>
 /// ハンドに参加している 1 席分の状態。StreetBet はこのストリートで出した額、Contributed はハンド全体で出した額。
@@ -39,6 +42,7 @@ public sealed record HandSeat(int PlayerId, long StreetBet, long Contributed, bo
 /// <summary>
 /// 進行中のハンド。Seats はボタンの次の人から並べ、ボタンの人を最後に置く（チョップの端数もこの順で配る）。
 /// WinnerTiers はショーダウンで選んだ勝者を強い順に積んだもの。
+/// Runs は Run it の回数で、null は 1 回、0 は回数を選ぶ前。2 回以上のときは、勝者を WinnerTiers ではなく RunTiers に回ごとに積む。
 /// </summary>
 public sealed record HandState(
     int Number,
@@ -50,14 +54,23 @@ public sealed record HandState(
     int? ToActId,
     long CurrentBet,
     long MinRaise,
-    ImmutableList<ImmutableList<int>> WinnerTiers);
+    ImmutableList<ImmutableList<int>> WinnerTiers,
+    int? Runs = null,
+    ImmutableList<ImmutableList<ImmutableList<int>>>? RunTiers = null);
 
-public sealed record PlayerResult(int PlayerId, long Won, long Contributed)
+/// <summary>
+/// 1 人分のハンドの結果。RunsWon はポットを（一部でも）取った回の数、Bonus は 72o で受け取った額（払った人は負）。
+/// </summary>
+public sealed record PlayerResult(int PlayerId, long Won, long Contributed, int RunsWon = 0, long Bonus = 0)
 {
-    [JsonIgnore] public long Net => Won - Contributed;
+    [JsonIgnore] public long Net => Won - Contributed + Bonus;
 }
 
-public sealed record HandResult(int HandNumber, ImmutableList<PlayerResult> Players);
+/// <summary>
+/// 前のハンドの結果。Bb と Runs は 72o の額を決めるのに使う（古い保存データでは Bb が 0 なので 72o を入れられない）。
+/// SevenDeuceId は 72o を受け取った人（入れていなければ null）。
+/// </summary>
+public sealed record HandResult(int HandNumber, ImmutableList<PlayerResult> Players, long Bb = 0, int Runs = 1, int? SevenDeuceId = null);
 
 /// <summary>
 /// ゲーム全体の状態。不変オブジェクトで、操作のたびに GameEngine が新しい状態を作る。

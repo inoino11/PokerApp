@@ -21,6 +21,8 @@ namespace PokerApp.Models;
 [JsonDerivedType(typeof(EditPlayer), "edit")]
 [JsonDerivedType(typeof(ChooseButton), "button")]
 [JsonDerivedType(typeof(RestartGame), "restart")]
+[JsonDerivedType(typeof(ChooseRuns), "runs")]
+[JsonDerivedType(typeof(ClaimSevenDeuce), "72o")]
 public abstract record GameCommand;
 
 public sealed record AddPlayer(long Stack) : GameCommand;
@@ -73,3 +75,13 @@ public sealed record Act(int PlayerId, ActionKind Kind, long To = 0) : GameComma
 public sealed record ChooseWinners(ImmutableList<int> PlayerIds) : GameCommand;
 
 public sealed record UpdateSettings(GameSettings Settings) : GameCommand;
+
+/// <summary>
+/// オールインで残りのカードを何回配るか（Run it Twice / Thrice）。回数を選ぶ場面でだけ使える。
+/// </summary>
+public sealed record ChooseRuns(int Count) : GameCommand;
+
+/// <summary>
+/// 前のハンドを 7-2 のオフスートで取った人にボーナスを払う（72o ルール）。ハンドの合間に、1 ハンドにつき 1 回だけ。
+/// </summary>
+public sealed record ClaimSevenDeuce(int PlayerId) : GameCommand;
