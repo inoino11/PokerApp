@@ -189,7 +189,7 @@ window.appDevice = {
     levelUp() {
         try { navigator.vibrate?.([200, 100, 200]); } catch { }
         this._beep(0, 880);
-        this._beep(0.3, 1175);
+        this._beep(0.45, 1175);
     },
 
     // レベルアップの 2 音と聞き分けられるよう、低めの 1 音にする
@@ -234,14 +234,17 @@ window.appDevice = {
         try {
             const ctx = this._context();
             if (ctx.state !== 'running') ctx.resume().catch(() => { });
+            // 音楽を流していても聞こえるよう大きめにする。三角波は倍音を含むので、スマホの小さいスピーカーでも聞き取りやすい。
+            // 2 音は時刻をずらして重ねないので、0.8 でも割れない
             const o = ctx.createOscillator();
             const g = ctx.createGain();
+            o.type = 'triangle';
             o.frequency.value = f;
-            g.gain.setValueAtTime(0.25, ctx.currentTime + t);
-            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.25);
+            g.gain.setValueAtTime(0.8, ctx.currentTime + t);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.4);
             o.connect(g).connect(ctx.destination);
             o.start(ctx.currentTime + t);
-            o.stop(ctx.currentTime + t + 0.3);
+            o.stop(ctx.currentTime + t + 0.45);
         } catch { }
     },
 
