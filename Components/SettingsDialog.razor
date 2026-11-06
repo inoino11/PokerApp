@@ -4,7 +4,6 @@
 @inject ISnackbar Snackbar
 
 <MudDialog Class="settings-dialog">
-    <TitleContent>設定</TitleContent>
     <DialogContent>
         @* --- プリセット（枠の中がプリセットに入る設定。上で読み込み、下で保存する） --- *@
         <div class="preset-box">
@@ -63,7 +62,7 @@
 
             @* 枠と同じ高さにし、枠の下の余白の分だけ持ち上げて、上下の端をそろえる *@
             <div class="d-flex gap-2 align-end mt-3">
-                <MudTextField @bind-Value="_saveName" Label="プリセット名" Placeholder="プリセットを保存" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
+                <MudTextField @bind-Value="_saveName" Label="プリセット名" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" />
                 <MudButton Variant="Variant.Outlined" Class="preset-save" Disabled="string.IsNullOrWhiteSpace(_saveName)" OnClick="SavePreset">保存</MudButton>
             </div>
         </div>

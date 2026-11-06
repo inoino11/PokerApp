@@ -1,18 +1,16 @@
 @* 始め直す。同じメンバーで初期スタックに戻すか、プレイヤーも消すかを選ぶ。結果は RestartGame で返す。
    どちらも UNDO で戻せるので、選ぶこと自体を確認の代わりにする *@
 <MudDialog>
-    <TitleContent>始め直す</TitleContent>
     <DialogContent>
         <div class="d-flex flex-column gap-3">
             <div>
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
-                           OnClick="() => Close(true)">同じメンバーで始め直す</MudButton>
+                           OnClick="() => Close(true)">同じメンバーで始める</MudButton>
                 <MudText Typo="Typo.caption" Class="d-block mt-1">プレイヤーはそのままで全員を @Chips.Format(StartingStack) に戻す</MudText>
             </div>
             <div>
                 <MudButton Variant="Variant.Outlined" Color="Color.Error" FullWidth="true"
                            OnClick="() => Close(false)">全部消して始める</MudButton>
-                <MudText Typo="Typo.caption" Class="d-block mt-1">プレイヤーを初期化してブラインド設定のみ残す</MudText>
             </div>
         </div>
     </DialogContent>

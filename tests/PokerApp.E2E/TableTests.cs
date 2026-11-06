@@ -248,7 +248,7 @@ public class TableTests(AppFixture app)
             await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = "参加者待ち（あと 1 人）" })).ToBeDisabledAsync();
 
             await page.GetByLabel("始め直す").ClickAsync();
-            await page.GetByRole(AriaRole.Button, new() { Name = "同じメンバーで始め直す" }).ClickAsync();
+            await page.GetByRole(AriaRole.Button, new() { Name = "同じメンバーで始める" }).ClickAsync();
             await Assertions.Expect(stacks.First).ToHaveTextAsync("10,000");
             await Assertions.Expect(stacks.Nth(1)).ToHaveTextAsync("10,000");
             await Assertions.Expect(page.GetByText("ディール開始")).ToBeVisibleAsync();
