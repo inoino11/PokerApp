@@ -12,7 +12,7 @@
                 <MudText Typo="Typo.subtitle2">プリセット</MudText>
             </div>
 
-            @* 選んだら下の欄に読み込む（ゲームに使うのは「適用」を押したとき） *@
+            @* 選んだら下の欄に読み込む（ゲームに使うのは「確定」を押したとき） *@
             <MudSelect T="string" Value="_presetName" ValueChanged="SelectPreset" Label="プリセットを読み込む" Variant="Variant.Outlined" Margin="Margin.Dense">
                 @foreach (var p in Presets.All)
                 {
@@ -84,7 +84,7 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="() => MudDialog.Cancel()">キャンセル</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Apply">適用</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Apply">確定</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -149,7 +149,7 @@
 
     private async Task DeletePreset(BlindPreset preset)
     {
-        var ok = await Dialogs.ShowMessageBoxAsync("プリセットの削除", $"「{preset.Name}」を削除しますか？", yesText: "削除", cancelText: "やめる");
+        var ok = await Dialogs.ShowMessageBoxAsync("プリセットの削除", $"「{preset.Name}」を削除しますか？", yesText: "削除", cancelText: "キャンセル");
         if (ok != true) return;
         await Presets.DeleteAsync(preset.Name);
         _presetName = null;
