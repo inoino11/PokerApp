@@ -250,6 +250,33 @@ public class GameEngineTests
     }
 
     [Fact]
+    public void 退席した人の名前と色は次に追加した人が使う()
+    {
+        var g = new TestGame(1, 1, 1).Do(new SetStatus(1, PlayerStatus.Left)).Do(new AddPlayer(1));
+        var added = g.State.Players[^1];
+        Assert.Equal((4, "P1", 0), (added.Id, added.Name, added.ColorIndex));
+        Assert.Equal("P1", g.State.GetPlayer(1).Name);  // 退席した人の記録はそのまま
+    }
+
+    [Fact]
+    public void 一時離席の人や手で付けた名前とはかぶらない()
+    {
+        var g = new TestGame(1, 1, 1).Do(new SetStatus(1, PlayerStatus.SittingOut)).Do(new RenamePlayer(3, "P4"))
+            .Do(new SetStatus(2, PlayerStatus.Left)).Do(new AddPlayer(1)).Do(new AddPlayer(1));
+        Assert.Equal(["P2", "P5"], g.State.Players.Skip(3).Select(p => p.Name));
+        Assert.Equal([1, 4], g.State.Players.Skip(3).Select(p => p.ColorIndex));
+    }
+
+    [Fact]
+    public void 十一人目からも卓の中で色がかぶらない()
+    {
+        var g = new TestGame(1, 1, 1, 1, 1, 1, 1, 1, 1, 1).Do(new SetStatus(5, PlayerStatus.Left)).Do(new AddPlayer(1));
+        var present = g.State.Players.Where(p => p.Status != PlayerStatus.Left).ToList();
+        Assert.Equal(10, present.Select(p => p.ColorIndex).Distinct().Count());
+        Assert.Equal("P5", g.State.Players[^1].Name);
+    }
+
+    [Fact]
     public void 席の入れ替え()
     {
         var g = new TestGame(1, 1, 1).Do(new MovePlayer(3, -1));
@@ -380,9 +407,9 @@ public class GameEngineTests
         Assert.Equal(0, g.State.HandCount);
         Assert.Equal(3, GameEngine.NextButtonId(g.State));
 
-        // 新しく足した人の番号は続きから
+        // 新しく足した人には、退席した人の番号を使う（内部の番号は続きから）
         g.Do(new AddPlayer(10000));
-        Assert.Equal("P5", g.State.Players[^1].Name);
+        Assert.Equal(("P4", 5), (g.State.Players[^1].Name, g.State.Players[^1].Id));
     }
 
     [Fact]

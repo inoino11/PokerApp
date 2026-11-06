@@ -117,9 +117,20 @@ public static class GameEngine
         if (s.Seated.Count() >= GameState.MaxSeats) throw new InvalidOperationException($"席は {GameState.MaxSeats} まで");
         if (c.Stack < 0) throw new InvalidOperationException("額が不正");
         var id = s.NextPlayerId;
-        var player = new Player(id, $"P{id}", (id - 1) % 10, c.Stack,
+        var n = FreeNumber(s);
+        var player = new Player(id, $"P{n}", (n - 1) % Chips.PlayerColors.Length, c.Stack,
             c.Stack > 0 ? PlayerStatus.Active : PlayerStatus.SittingOut, c.Stack);
         return s with { Players = s.Players.Add(player), NextPlayerId = id + 1 };
+    }
+
+    // 内部の番号（Id）は履歴と結果が人を指すのに使うので使い回さないが、画面の名前と色は卓にいる人の中でかぶらなければよい。
+    // 退席した人の番号と色を次に追加した人が使い、入れ替わりが多くても P1〜P10 と 10 色に収める
+    static int FreeNumber(GameState s)
+    {
+        var present = s.Players.Where(p => p.Status != PlayerStatus.Left).ToList();
+        var n = 1;
+        while (present.Any(p => p.ColorIndex % Chips.PlayerColors.Length == (n - 1) % Chips.PlayerColors.Length || p.Name == $"P{n}")) n++;
+        return n;
     }
 
     static GameState Rename(GameState s, RenamePlayer c)
