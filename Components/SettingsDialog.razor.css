@@ -92,3 +92,20 @@
     text-align: center;
     color: var(--mud-palette-text-secondary);
 }
+
+/* 説明と欄は、スイッチの文字の頭にそろえる（つまみの幅の分だけ右へ） */
+.unit-note {
+    margin: -8px 0 4px 58px;
+    font-size: 0.75rem;
+    color: var(--mud-palette-text-secondary);
+}
+
+/* 狭い幅で単語の途中で折れないよう、まとまりごとに折り返す */
+.phrase {
+    display: inline-block;
+}
+
+.unit-field {
+    width: 140px;
+    margin-left: 58px;
+}

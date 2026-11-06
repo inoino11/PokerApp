@@ -67,16 +67,18 @@
             </div>
         </div>
 
-        @* --- チップの単位 --- *@
-        <MudText Typo="Typo.subtitle2" Class="mt-4 mb-1">チップの単位</MudText>
-        <MudSwitch @bind-Value="_roundBets" Label="ポットの % で出した額とチョップを単位で丸める" Color="Color.Primary" />
-        <div class="d-flex gap-2 align-center">
-            <MudSwitch @bind-Value="_autoUnit" Label="単位は今のレベルの SB" Color="Color.Primary" Disabled="!_roundBets" />
-            @if (!_autoUnit)
-            {
-                <MudNumericField @bind-Value="_unit" Label="単位" Min="1" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="!_roundBets" Style="max-width:120px" />
-            }
-        </div>
+        @* --- 最小チップ --- *@
+        <MudText Typo="Typo.subtitle2" Class="mt-4 mb-1">最小チップ</MudText>
+        <MudSwitch @bind-Value="_roundBets" Label="端数を丸める" Color="Color.Primary" />
+        <div class="unit-note"><span class="phrase">% ボタンの額と</span><span class="phrase">チョップの分け方</span></div>
+        <MudSwitch @bind-Value="_autoUnit" Label="今の SB に合わせる" Color="Color.Primary" Disabled="!_roundBets" />
+        @* 横に並べると狭い幅で欄が潰れるので、スイッチの下の段に置く *@
+        @if (!_autoUnit)
+        {
+            <div class="unit-field">
+                <MudNumericField @bind-Value="_unit" Label="最小チップ" Min="1" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="!_roundBets" />
+            </div>
+        }
 
         <MudDivider Class="my-3" />
 
