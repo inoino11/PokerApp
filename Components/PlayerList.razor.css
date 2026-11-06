@@ -60,9 +60,8 @@
 }
 
 .allin-card {
-    display: inline-block;
-    height: 24px;
-    margin: -2px 4px -3px 0;
+    flex-shrink: 0;
+    height: 28px;
 }
 
 .allin-card svg {

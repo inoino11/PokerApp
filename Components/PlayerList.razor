@@ -47,24 +47,24 @@
                     {
                         <span class="player-badge @(badge switch { "D" => "badge-d", "次D" => "badge-next", _ => "" })">@badge</span>
                     }
-                    @if (seat is { AllIn: true })
-                    {
-                        @* 卓でオールインした人の前に立てる三角の札に見立てる。小さくて文字は読めないので、アイコンのどんぐりを置く *@
-                        <span class="allin-card" role="img" aria-label="All-in">
-                            <svg viewBox="0 0 100 90" aria-hidden="true">
-                                <path class="allin-edge" d="M50,6 L95,84 L5,84 Z" />
-                                <path class="allin-face" d="M50,24 L80,76 L20,76 Z" />
-                                <g class="allin-acorn" transform="translate(50 57) scale(0.3)">
-                                    <rect x="-5" y="-46" width="10" height="16" rx="4" />
-                                    <path d="M-40,-4 C-40,-38 40,-38 40,-4 Z" />
-                                    <path d="M-31,2 L31,2 C31,32 13,54 0,60 C-13,54 -31,32 -31,2 Z" />
-                                </g>
-                            </svg>
-                        </span>
-                    }
                     @StateText(p, seat)
                 </div>
             </div>
+            @if (seat is { AllIn: true })
+            {
+                @* 卓でオールインした人の前に立てる三角の札に見立てる。行の上下の中央に置く。小さくて文字は読めないので、アイコンのどんぐりを置く *@
+                <span class="allin-card" role="img" aria-label="All-in">
+                    <svg viewBox="0 0 100 90" aria-hidden="true">
+                        <path class="allin-edge" d="M50,6 L95,84 L5,84 Z" />
+                        <path class="allin-face" d="M50,24 L80,76 L20,76 Z" />
+                        <g class="allin-acorn" transform="translate(50 57) scale(0.3)">
+                            <rect x="-5" y="-46" width="10" height="16" rx="4" />
+                            <path d="M-40,-4 C-40,-38 40,-38 40,-4 Z" />
+                            <path d="M-31,2 L31,2 C31,32 13,54 0,60 C-13,54 -31,32 -31,2 Z" />
+                        </g>
+                    </svg>
+                </span>
+            }
             <div class="player-bet">
                 @if (seat is { StreetBet: > 0 })
                 {
