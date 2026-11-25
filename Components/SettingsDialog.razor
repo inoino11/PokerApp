@@ -32,7 +32,7 @@
                 <MudNumericField @bind-Value="_minutes" Label="ラウンド（分）" HelperText="0 ならブラインド固定" Min="0" Max="600" Variant="Variant.Outlined" Margin="Margin.Dense" />
                 <MudNumericField @bind-Value="_startingStack" Label="初期スタック" Min="0" Step="1000" Variant="Variant.Outlined" Margin="Margin.Dense" />
             </div>
-            <MudSwitch @bind-Value="_triple" Label="トリプルブラインド（4 人以上のとき）" Color="Color.Primary" Class="mt-1" />
+            <MudSwitch @bind-Value="_triple" Label="トリプルブラインド" Color="Color.Primary" Class="mt-1" />
 
             <div class="levels @(_triple ? "levels-triple" : "")">
                 <div class="level-row level-head">
